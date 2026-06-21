@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { loginStart, loginSuccess, loginFailure, setRememberMe, clearError } from '../../store/slices/authSlice';
 import { addToast } from '../../store/slices/globalSlice';
 import type { RootState, AppDispatch } from '../../store';
+import { LoginAdminAction } from '../../store/actions/authAction';
 import TextInput from '../../components/form/TextInput';
 import PasswordInput from '../../components/form/PasswordInput';
 import Button from '../../components/Button';
@@ -66,31 +67,46 @@ export const LoginPage: React.FC = () => {
         setLogText('ESTABLISHING RSA-4096 LINK CHANNEL...');
 
         setTimeout(() => {
-          const mockUser = {
-            id: '1',
-            name: 'Sayan Ghosh',
-            email: validEmail,
-            roleId: 1,
-            roleName: 'Super Admin',
-          };
-          const mockToken = 'gis-mock-jwt-token-sayan-ghosh';
+          const encodedPassword = btoa(data.password);
+          dispatch(
+            LoginAdminAction({
+              username: validEmail,
+              password: encodedPassword,
+            })
+          )
+            .then(() => {
+              if (data.remember) {
+                dispatch(setRememberMe(true));
+                localStorage.setItem('savedEmail', validEmail);
+              } else {
+                dispatch(setRememberMe(false));
+                localStorage.removeItem('savedEmail');
+              }
 
-          dispatch(loginSuccess({ user: mockUser, token: mockToken }));
+              dispatch(
+                addToast({
+                  type: 'success',
+                  message: 'Successfully authorized and logged in',
+                })
+              );
 
-          if (data.remember) {
-            dispatch(setRememberMe(true));
-            localStorage.setItem('savedEmail', validEmail);
-          } else {
-            dispatch(setRememberMe(false));
-            localStorage.removeItem('savedEmail');
-          }
-
-          dispatch(addToast({
-            type: 'success',
-            message: 'Successfully logged in as ' + mockUser.name
-          }));
-
-          navigate('/dashboard');
+              navigate('/dashboard');
+            })
+            .catch((err: any) => {
+              setLogText('ERROR: AUTHENTICATION FAILED');
+              const errMsg =
+                err?.response?.data?.Errors ||
+                err?.response?.data?.Message ||
+                err?.message ||
+                'Authentication credentials invalid';
+              dispatch(loginFailure(String(errMsg)));
+              dispatch(
+                addToast({
+                  type: 'error',
+                  message: String(errMsg),
+                })
+              );
+            });
         }, 600);
       }, 700);
     }, 700);
