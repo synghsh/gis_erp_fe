@@ -1,0 +1,208 @@
+/* DataTable Styling */
+
+.table-card {
+  background-color: var(--card-bg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.table-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 320px;
+  width: 100%;
+}
+
+.table-search-box .search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+}
+
+.table-search-box .search-input {
+  width: 100%;
+  padding: 10px 16px 10px 38px;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+}
+
+.table-actions-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.table-responsive-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.erp-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.erp-table th {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-weight: 700;
+  padding: 14px 20px;
+  border-bottom: 1.5px solid var(--border-color);
+  user-select: none;
+  font-size: 0.825rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.erp-table th.sortable-th {
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.erp-table th.sortable-th:hover {
+  background-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.th-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sort-icon {
+  color: var(--text-muted);
+  transition: transform var(--transition-fast), color var(--transition-fast);
+  opacity: 0.5;
+}
+
+.sort-icon.active {
+  color: var(--primary-color);
+  opacity: 1;
+}
+
+.sort-icon.active.desc {
+  transform: rotate(180deg);
+}
+
+.erp-table td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  transition: background-color var(--transition-fast);
+  font-weight: 500;
+}
+
+.erp-table tbody tr {
+  background-color: var(--bg-secondary);
+}
+
+.erp-table tbody tr:hover td {
+  background-color: var(--bg-primary);
+}
+
+.no-data-td {
+  padding: 0 !important;
+}
+
+.bold-info {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Pagination panel */
+.table-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.rows-per-page {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rows-label {
+  white-space: nowrap;
+}
+
+.rows-select {
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.page-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.page-btn {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.page-btn:hover:not(:disabled) {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.icon-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 6px;
+}
+
+.page-current-indicator {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 4px;
+}

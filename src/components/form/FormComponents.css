@@ -1,0 +1,234 @@
+/* Form Component Styling */
+
+.form-control-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  width: 100%;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.required-asterisk {
+  color: var(--error-color);
+  margin-left: 2px;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  transition: all var(--transition-fast);
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-primary);
+}
+
+.form-input.with-icon {
+  padding-left: 44px;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 14px;
+  background: transparent;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+}
+
+.password-toggle-btn:hover {
+  color: var(--primary-color);
+}
+
+/* Error States */
+.form-control-group.has-error .form-input {
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 3px var(--error-light);
+}
+
+.form-error-msg {
+  color: var(--error-color);
+  font-size: 0.775rem;
+  font-weight: 500;
+  margin-top: 5px;
+}
+
+/* Select and Dropdowns */
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.form-select {
+  width: 100%;
+  padding: 12px 16px;
+  padding-right: 40px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  appearance: none;
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.select-arrow {
+  position: absolute;
+  right: 14px;
+  pointer-events: none;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+}
+
+/* Multi-Select custom dropdown */
+.multiselect-container {
+  position: relative;
+  width: 100%;
+}
+
+.multiselect-trigger {
+  min-height: 48px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 36px 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.multiselect-trigger.focused {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.multiselect-trigger-placeholder {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.multiselect-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  font-size: 0.775rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.multiselect-chip-remove {
+  border: none;
+  background: transparent;
+  color: var(--primary-color);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+}
+
+.multiselect-chip-remove:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.multiselect-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--card-shadow);
+  z-index: 100;
+  padding: 6px;
+}
+
+.multiselect-option {
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-primary);
+  transition: background-color var(--transition-fast);
+}
+
+.multiselect-option:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.multiselect-option.selected {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Date Picker adjustments */
+.form-datepicker {
+  cursor: pointer;
+}
+.form-datepicker::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(var(--theme-is-dark, 0));
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+.form-datepicker::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Dark Mode overrides for picker indicator */
+body.dark .form-datepicker::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
