@@ -17,11 +17,12 @@ export const ThreeGlobeBg: React.FC = () => {
   }, [themeMode]);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
 
     // 1. Initial Dimensions Setup
-    const width = containerRef.current.clientWidth || 250;
-    const height = containerRef.current.clientHeight || 250;
+    const width = container.clientWidth || 250;
+    const height = container.clientHeight || 250;
 
     // 2. Scene, Camera, Renderer setup
     const scene = new THREE.Scene();
@@ -41,7 +42,9 @@ export const ThreeGlobeBg: React.FC = () => {
     renderer.domElement.style.display = 'block';
     renderer.domElement.style.pointerEvents = 'none';
 
-    containerRef.current.appendChild(renderer.domElement);
+    // Clear any previous container content to prevent duplicate static canvas from Strict Mode or Hot Reloads
+    container.innerHTML = '';
+    container.appendChild(renderer.domElement);
 
     // 3. Lights Setup (Required for 3D Shaded Materials)
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
@@ -349,10 +352,10 @@ export const ThreeGlobeBg: React.FC = () => {
 
     // 8. Handle Container Resizing safely
     const resizeObserver = new ResizeObserver((entries) => {
-      if (!containerRef.current) return;
+      if (!container) return;
       for (let entry of entries) {
-        const w = entry.contentRect.width || containerRef.current.clientWidth || 250;
-        const h = entry.contentRect.height || containerRef.current.clientHeight || 250;
+        const w = entry.contentRect.width || container.clientWidth || 250;
+        const h = entry.contentRect.height || container.clientHeight || 250;
         if (w > 0 && h > 0) {
           adjustCameraZ(w, h);
           // Pass false as the third parameter to resize the drawing buffer but NOT the CSS width/height styles,
@@ -361,16 +364,16 @@ export const ThreeGlobeBg: React.FC = () => {
         }
       }
     });
-    resizeObserver.observe(containerRef.current);
+    resizeObserver.observe(container);
 
     // 9. Component Unmount cleanup
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('mousemove', handleMouseMove);
       resizeObserver.disconnect();
-      if (containerRef.current) {
+      if (container) {
         try {
-          containerRef.current.removeChild(renderer.domElement);
+          container.removeChild(renderer.domElement);
         } catch (_) {}
       }
       // Dispose WebGL assets
