@@ -1,8 +1,10 @@
 import type { UserMain } from "../../models/userModels";
 import { AuthActionTypes } from "../../services/authHelpers";
-import InitialState from "./initialState";
 
-const initialState: UserMain = InitialState.user;
+const initialState: UserMain = {
+  userDetails: undefined,
+  token: null,
+};
 
 export default function UserReducer(
   state: UserMain = initialState,

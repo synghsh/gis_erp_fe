@@ -1,5 +1,6 @@
 import { combineReducers } from "redux";
 import UserReducer from "./userReducer";
+import MasterReducer from "./masterReducer";
 import LoadingReducer from "./loadingReducer";
 import ErrorReducer from "./errorReducer";
 import themeReducer from "../slices/themeSlice";
@@ -12,6 +13,7 @@ import authReducer from "../slices/authSlice";
 
 const rootReducer = combineReducers({
   user: UserReducer,
+  master: MasterReducer,
   loading: LoadingReducer,
   error: ErrorReducer,
   auth: authReducer,

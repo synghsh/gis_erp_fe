@@ -8,6 +8,12 @@ const InitialState: StoreState = {
     userDetails: storedUser ? JSON.parse(storedUser) : undefined,
     token: storedToken || null,
   },
+  master: {
+    stateListing: undefined,
+    stateDetail: undefined,
+    stateAddResult: undefined,
+    stateEditResult: undefined,
+  },
   loading: {
     count: 0,
     message: "",

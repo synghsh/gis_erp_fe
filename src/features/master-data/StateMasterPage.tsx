@@ -12,10 +12,16 @@ import SelectDropdown from '../../components/form/SelectDropdown';
 import Button from '../../components/Button';
 import Chips from '../../components/Chips';
 import FormWrapper from '../../components/form/FormWrapper';
-import { addState, updateState, deleteState } from '../../store/slices/masterDataSlice';
-import type { StateRecord } from '../../store/slices/masterDataSlice';
+import { StateListingAction, AddStateAction, EditStateAction } from '../../store/actions/masterAction';
 import { addToast } from '../../store/slices/globalSlice';
 import type { RootState, AppDispatch } from '../../store';
+
+export interface StateRecord {
+  id: number;
+  name: string;
+  code: string;
+  status: 'Active' | 'Inactive';
+}
 
 const breadcrumbs = [
   { label: 'Master Data' },
@@ -30,7 +36,20 @@ interface StateFormInputs {
 
 export const StateMasterPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const statesList = useSelector((state: RootState) => state.masterData.states);
+  const statesList = useSelector((state: RootState) => state.master?.stateListing || []);
+  
+  const formattedStates = React.useMemo(() => {
+    return statesList.map((s: any) => ({
+      id: s.id,
+      name: s.state_name,
+      code: s.state_code,
+      status: s.is_active ? 'Active' : 'Inactive'
+    }));
+  }, [statesList]);
+
+  React.useEffect(() => {
+    dispatch(StateListingAction({}));
+  }, [dispatch]);
   
   // Drawer/Modal States
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -62,20 +81,53 @@ export const StateMasterPage: React.FC = () => {
   };
 
   const onSubmit = (data: StateFormInputs) => {
+    const isActive = data.status === 'Active';
     if (activeItem) {
-      dispatch(updateState({ id: activeItem.id, ...data }));
-      dispatch(addToast({ type: 'success', message: `State "${data.name}" updated successfully.` }));
+      dispatch(
+        EditStateAction(
+          {
+            id: activeItem.id,
+            state_code: data.code,
+            state_name: data.name,
+            is_active: isActive
+          },
+          () => {
+            dispatch(addToast({ type: 'success', message: `State "${data.name}" updated successfully.` }));
+            dispatch(StateListingAction({}));
+          }
+        )
+      );
     } else {
-      dispatch(addState(data));
-      dispatch(addToast({ type: 'success', message: `State "${data.name}" added successfully.` }));
+      dispatch(
+        AddStateAction(
+          {
+            state_code: data.code,
+            state_name: data.name
+          },
+          () => {
+            dispatch(addToast({ type: 'success', message: `State "${data.name}" added successfully.` }));
+            dispatch(StateListingAction({}));
+          }
+        )
+      );
     }
     setDrawerOpen(false);
   };
 
   const handleConfirmDelete = () => {
     if (activeItem) {
-      dispatch(deleteState(activeItem.id));
-      dispatch(addToast({ type: 'success', message: `State "${activeItem.name}" deleted successfully.` }));
+      dispatch(
+        EditStateAction(
+          {
+            id: activeItem.id,
+            is_active: false
+          },
+          () => {
+            dispatch(addToast({ type: 'success', message: `State "${activeItem.name}" deactivated successfully.` }));
+            dispatch(StateListingAction({}));
+          }
+        )
+      );
     }
     setDeleteModalOpen(false);
   };
@@ -144,7 +196,7 @@ export const StateMasterPage: React.FC = () => {
       {/* Grid Table */}
       <DataTable<StateRecord>
         columns={columns}
-        data={statesList}
+        data={formattedStates}
         searchPlaceholder="Search states by name or code..."
       />
 
