@@ -11,6 +11,10 @@ import {
   EditBlockService,
   ListBlocksService,
   GetBlockDetailService,
+  AddRoleService,
+  EditRoleService,
+  ListRolesService,
+  GetRoleDetailService,
 } from "../../services/masterService";
 import type {
   AddStatePayload,
@@ -25,6 +29,10 @@ import type {
   EditBlockPayload,
   ListBlocksPayload,
   GetBlockDetailPayload,
+  AddRolePayload,
+  EditRolePayload,
+  ListRolesPayload,
+  GetRoleDetailPayload,
 } from "../../models/masterModels";
 import {
   ApiCallErrorAction,
@@ -398,3 +406,128 @@ export const GetBlockDetailAction = (payload: GetBlockDetailPayload, successCall
       });
   };
 };
+
+export const RoleListingAction = (payload: ListRolesPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(
+      BeginApiCallAction({ count: 1, message: "Fetching roles...", type: 2 }),
+    );
+    return ListRolesService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Role_Listing_Success_Action,
+            payload: res.data?.Data ?? res.data ?? {},
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(
+          ApiCallErrorAction(
+            err?.response?.data?.Errors || err?.response?.data || err,
+          ),
+        );
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const AddRoleAction = (payload: AddRolePayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(
+      BeginApiCallAction({ count: 1, message: "Adding role...", type: 2 }),
+    );
+    return AddRoleService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Role_Add_Success_Action,
+            payload: res.data?.Data ?? res.data,
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(
+          ApiCallErrorAction(
+            err?.response?.data?.Errors || err?.response?.data || err,
+          ),
+        );
+        throw err;
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const EditRoleAction = (payload: EditRolePayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(
+      BeginApiCallAction({ count: 1, message: "Updating role...", type: 2 }),
+    );
+    return EditRoleService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Role_Edit_Success_Action,
+            payload: res.data?.Data ?? res.data,
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(
+          ApiCallErrorAction(
+            err?.response?.data?.Errors || err?.response?.data || err,
+          ),
+        );
+        throw err;
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const GetRoleDetailAction = (payload: GetRoleDetailPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(
+      BeginApiCallAction({ count: 1, message: "Fetching role detail...", type: 2 }),
+    );
+    return GetRoleDetailService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Role_Detail_Success_Action,
+            payload: res.data?.Data?.role ?? res.data?.role ?? null,
+          });
+          if (successCallback) successCallback(res.data?.Data?.role ?? res.data?.role);
+        }
+      })
+      .catch((err) => {
+        dispatch(
+          ApiCallErrorAction(
+            err?.response?.data?.Errors || err?.response?.data || err,
+          ),
+        );
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+// Force HMR reload comment
+

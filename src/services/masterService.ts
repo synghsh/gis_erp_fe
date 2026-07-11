@@ -13,6 +13,10 @@ import type {
   EditBlockPayload,
   ListBlocksPayload,
   GetBlockDetailPayload,
+  AddRolePayload,
+  EditRolePayload,
+  ListRolesPayload,
+  GetRoleDetailPayload,
 } from "../models/masterModels";
 
 export const serviceClient = new RestService({
@@ -66,3 +70,22 @@ export const ListBlocksService = (data: ListBlocksPayload) => {
 export const GetBlockDetailService = (data: GetBlockDetailPayload) => {
   return serviceClient.post(urls.block_detail, data);
 };
+
+export const AddRoleService = (data: AddRolePayload) => {
+  return serviceClient.post(urls.role_add, data);
+};
+
+export const EditRoleService = (data: EditRolePayload) => {
+  return serviceClient.post(urls.role_edit, data);
+};
+
+export const ListRolesService = (data: ListRolesPayload) => {
+  return serviceClient.post(urls.role_list, data);
+};
+
+export const GetRoleDetailService = (data: GetRoleDetailPayload) => {
+  return serviceClient.post(urls.role_detail, data);
+};
+
+// Force HMR reload comment
+

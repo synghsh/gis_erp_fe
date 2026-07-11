@@ -16,7 +16,7 @@ export default function UserReducer(
     case AuthActionTypes.Token_Success_Action:
       return { ...state, token: action.payload };
     case AuthActionTypes.Signing_Out_Admin_Succss_Action:
-      return { ...InitialState.user, token: null, userDetails: undefined };
+      return { ...initialState, token: null, userDetails: undefined };
     default:
       return state;
   }

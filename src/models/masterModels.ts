@@ -71,3 +71,28 @@ export interface ListBlocksPayload {
 export interface GetBlockDetailPayload {
   id: number;
 }
+
+export interface AddRolePayload {
+  role_name: string;
+  role_code: string;
+  description?: string;
+}
+
+export interface EditRolePayload {
+  id: number;
+  role_name?: string;
+  role_code?: string;
+  description?: string;
+  is_active?: boolean;
+}
+
+export interface ListRolesPayload {
+  search?: string;
+  is_active?: boolean;
+  page_no?: number;
+  page_size?: number;
+}
+
+export interface GetRoleDetailPayload {
+  id: number;
+}

@@ -13,6 +13,11 @@ export const MasterServicesActionTypes = {
   Block_Add_Success_Action: "[MASTER] Block Add Success Action",
   Block_Edit_Success_Action: "[MASTER] Block Edit Success Action",
   Block_Detail_Success_Action: "[MASTER] Block Detail Success Action",
+
+  Role_Listing_Success_Action: "[MASTER] Role Listing Success Action",
+  Role_Add_Success_Action: "[MASTER] Role Add Success Action",
+  Role_Edit_Success_Action: "[MASTER] Role Edit Success Action",
+  Role_Detail_Success_Action: "[MASTER] Role Detail Success Action",
 } as const;
 
 const initialState = {
@@ -34,6 +39,16 @@ const initialState = {
   blockDetail: null,
   blockAddResult: null,
   blockEditResult: null,
+  roleListing: {
+    roles: [],
+    total_count: 0,
+    total_pages: 0,
+    current_page: 1,
+    page_size: 10,
+  },
+  roleDetail: null,
+  roleAddResult: null,
+  roleEditResult: null,
 };
 
 export default function MasterReducer(
@@ -76,6 +91,18 @@ export default function MasterReducer(
 
     case MasterServicesActionTypes.Block_Edit_Success_Action:
       return { ...state, blockEditResult: action.payload };
+
+    case MasterServicesActionTypes.Role_Listing_Success_Action:
+      return { ...state, roleListing: action.payload };
+
+    case MasterServicesActionTypes.Role_Detail_Success_Action:
+      return { ...state, roleDetail: action.payload };
+
+    case MasterServicesActionTypes.Role_Add_Success_Action:
+      return { ...state, roleAddResult: action.payload };
+
+    case MasterServicesActionTypes.Role_Edit_Success_Action:
+      return { ...state, roleEditResult: action.payload };
 
     default:
       return state;

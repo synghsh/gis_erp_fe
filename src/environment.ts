@@ -20,4 +20,10 @@ export const urls = {
   block_edit: "master/block/edit/",
   block_list: "master/block/list/",
   block_detail: "master/block/detail/",
+
+  // Role Master
+  role_add: "master/role/add/",
+  role_edit: "master/role/edit/",
+  role_list: "master/role/list/",
+  role_detail: "master/role/detail/",
 };
