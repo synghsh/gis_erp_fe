@@ -17,6 +17,10 @@ import type {
   EditRolePayload,
   ListRolesPayload,
   GetRoleDetailPayload,
+  AddDesignationPayload,
+  EditDesignationPayload,
+  ListDesignationsPayload,
+  GetDesignationDetailPayload,
 } from "../models/masterModels";
 
 export const serviceClient = new RestService({
@@ -85,6 +89,22 @@ export const ListRolesService = (data: ListRolesPayload) => {
 
 export const GetRoleDetailService = (data: GetRoleDetailPayload) => {
   return serviceClient.post(urls.role_detail, data);
+};
+
+export const AddDesignationService = (data: AddDesignationPayload) => {
+  return serviceClient.post(urls.designation_add, data);
+};
+
+export const EditDesignationService = (data: EditDesignationPayload) => {
+  return serviceClient.post(urls.designation_edit, data);
+};
+
+export const ListDesignationsService = (data: ListDesignationsPayload) => {
+  return serviceClient.post(urls.designation_list, data);
+};
+
+export const GetDesignationDetailService = (data: GetDesignationDetailPayload) => {
+  return serviceClient.post(urls.designation_detail, data);
 };
 
 // Force HMR reload comment

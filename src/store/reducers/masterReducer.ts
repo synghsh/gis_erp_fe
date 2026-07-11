@@ -18,6 +18,11 @@ export const MasterServicesActionTypes = {
   Role_Add_Success_Action: "[MASTER] Role Add Success Action",
   Role_Edit_Success_Action: "[MASTER] Role Edit Success Action",
   Role_Detail_Success_Action: "[MASTER] Role Detail Success Action",
+
+  Designation_Listing_Success_Action: "[MASTER] Designation Listing Success Action",
+  Designation_Add_Success_Action: "[MASTER] Designation Add Success Action",
+  Designation_Edit_Success_Action: "[MASTER] Designation Edit Success Action",
+  Designation_Detail_Success_Action: "[MASTER] Designation Detail Success Action",
 } as const;
 
 const initialState = {
@@ -49,6 +54,16 @@ const initialState = {
   roleDetail: null,
   roleAddResult: null,
   roleEditResult: null,
+  designationListing: {
+    designations: [],
+    total_count: 0,
+    total_pages: 0,
+    current_page: 1,
+    page_size: 10,
+  },
+  designationDetail: null,
+  designationAddResult: null,
+  designationEditResult: null,
 };
 
 export default function MasterReducer(
@@ -103,6 +118,18 @@ export default function MasterReducer(
 
     case MasterServicesActionTypes.Role_Edit_Success_Action:
       return { ...state, roleEditResult: action.payload };
+
+    case MasterServicesActionTypes.Designation_Listing_Success_Action:
+      return { ...state, designationListing: action.payload };
+
+    case MasterServicesActionTypes.Designation_Detail_Success_Action:
+      return { ...state, designationDetail: action.payload };
+
+    case MasterServicesActionTypes.Designation_Add_Success_Action:
+      return { ...state, designationAddResult: action.payload };
+
+    case MasterServicesActionTypes.Designation_Edit_Success_Action:
+      return { ...state, designationEditResult: action.payload };
 
     default:
       return state;

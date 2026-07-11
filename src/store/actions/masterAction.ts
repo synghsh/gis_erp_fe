@@ -15,6 +15,10 @@ import {
   EditRoleService,
   ListRolesService,
   GetRoleDetailService,
+  AddDesignationService,
+  EditDesignationService,
+  ListDesignationsService,
+  GetDesignationDetailService,
 } from "../../services/masterService";
 import type {
   AddStatePayload,
@@ -33,6 +37,10 @@ import type {
   EditRolePayload,
   ListRolesPayload,
   GetRoleDetailPayload,
+  AddDesignationPayload,
+  EditDesignationPayload,
+  ListDesignationsPayload,
+  GetDesignationDetailPayload,
 } from "../../models/masterModels";
 import {
   ApiCallErrorAction,
@@ -529,5 +537,124 @@ export const GetRoleDetailAction = (payload: GetRoleDetailPayload, successCallba
   };
 };
 
-// Force HMR reload comment
+export const DesignationListingAction = (payload: ListDesignationsPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(
+      BeginApiCallAction({ count: 1, message: "Fetching designations...", type: 2 }),
+    );
+    return ListDesignationsService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Designation_Listing_Success_Action,
+            payload: res.data?.Data ?? res.data ?? {},
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(
+          ApiCallErrorAction(
+            err?.response?.data?.Errors || err?.response?.data || err,
+          ),
+        );
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
 
+export const AddDesignationAction = (payload: AddDesignationPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(
+      BeginApiCallAction({ count: 1, message: "Adding designation...", type: 2 }),
+    );
+    return AddDesignationService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Designation_Add_Success_Action,
+            payload: res.data?.Data ?? res.data,
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(
+          ApiCallErrorAction(
+            err?.response?.data?.Errors || err?.response?.data || err,
+          ),
+        );
+        throw err;
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const EditDesignationAction = (payload: EditDesignationPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(
+      BeginApiCallAction({ count: 1, message: "Updating designation...", type: 2 }),
+    );
+    return EditDesignationService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Designation_Edit_Success_Action,
+            payload: res.data?.Data ?? res.data,
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(
+          ApiCallErrorAction(
+            err?.response?.data?.Errors || err?.response?.data || err,
+          ),
+        );
+        throw err;
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const GetDesignationDetailAction = (payload: GetDesignationDetailPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(
+      BeginApiCallAction({ count: 1, message: "Fetching designation detail...", type: 2 }),
+    );
+    return GetDesignationDetailService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Designation_Detail_Success_Action,
+            payload: res.data?.Data?.designation ?? res.data?.designation ?? null,
+          });
+          if (successCallback) successCallback(res.data?.Data?.designation ?? res.data?.designation);
+        }
+      })
+      .catch((err) => {
+        dispatch(
+          ApiCallErrorAction(
+            err?.response?.data?.Errors || err?.response?.data || err,
+          ),
+        );
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};

@@ -96,3 +96,31 @@ export interface ListRolesPayload {
 export interface GetRoleDetailPayload {
   id: number;
 }
+
+export interface AddDesignationPayload {
+  role_id: number;
+  designation_name: string;
+  designation_code: string;
+  description?: string;
+}
+
+export interface EditDesignationPayload {
+  id: number;
+  role_id?: number;
+  designation_name?: string;
+  designation_code?: string;
+  description?: string;
+  is_active?: boolean;
+}
+
+export interface ListDesignationsPayload {
+  role_id?: number;
+  search?: string;
+  is_active?: boolean;
+  page_no?: number;
+  page_size?: number;
+}
+
+export interface GetDesignationDetailPayload {
+  id: number;
+}

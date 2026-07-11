@@ -7,6 +7,7 @@ import StateMasterPage from '../features/master-data/StateMasterPage';
 import DistrictMasterPage from '../features/master-data/DistrictMasterPage';
 import BlockMasterPage from '../features/master-data/BlockMasterPage';
 import RoleMasterPage from '../features/master-data/RoleMasterPage';
+import DesignationMasterPage from '../features/master-data/DesignationMasterPage';
 import UserDetailsPage from '../features/user-management/UserDetailsPage';
 
 // Simple Stub Component for other routes
@@ -37,9 +38,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/master/district" element={<DistrictMasterPage />} />
         <Route path="/master/block" element={<BlockMasterPage />} />
         <Route path="/master/role" element={<RoleMasterPage />} />
-        
-        {/* Master Data Stub routes */}
-        <Route path="/master/designation" element={<ComingSoonPage title="Designation Master" />} />
+        <Route path="/master/designation" element={<DesignationMasterPage />} />
         
         {/* User Management */}
         <Route path="/users/details" element={<UserDetailsPage />} />

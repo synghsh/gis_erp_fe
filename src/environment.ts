@@ -26,4 +26,10 @@ export const urls = {
   role_edit: "master/role/edit/",
   role_list: "master/role/list/",
   role_detail: "master/role/detail/",
+
+  // Designation Master
+  designation_add: "master/designation/add/",
+  designation_edit: "master/designation/edit/",
+  designation_list: "master/designation/list/",
+  designation_detail: "master/designation/detail/",
 };
