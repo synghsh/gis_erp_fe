@@ -17,7 +17,7 @@ import ThreeGlobeBg from './ThreeGlobeBg';
 import './Auth.css';
 
 interface LoginFormInputs {
-  email: string;
+  emailOrPhone: string;
   password: string;
   remember: boolean;
 }
@@ -36,7 +36,7 @@ export const LoginPage: React.FC = () => {
     formState: { errors },
   } = useForm<LoginFormInputs>({
     defaultValues: {
-      email: rememberMe ? (localStorage.getItem('savedEmail') || '') : '',
+      emailOrPhone: rememberMe ? (localStorage.getItem('savedEmailOrPhone') || '') : '',
       password: '',
       remember: rememberMe,
     }
@@ -56,7 +56,7 @@ export const LoginPage: React.FC = () => {
       setLogText('CONNECTING TO GIS MASTER NODE...');
 
       setTimeout(() => {
-        const validEmail = data.email.trim();
+        const validEmailOrPhone = data.emailOrPhone.trim();
 
         if (data.password.length < 6) {
           dispatch(loginFailure('Password must be at least 6 characters.'));
@@ -70,17 +70,17 @@ export const LoginPage: React.FC = () => {
           const encodedPassword = btoa(data.password);
           dispatch(
             LoginAdminAction({
-              username: validEmail,
+              username: validEmailOrPhone,
               password: encodedPassword,
             })
           )
             .then(() => {
               if (data.remember) {
                 dispatch(setRememberMe(true));
-                localStorage.setItem('savedEmail', validEmail);
+                localStorage.setItem('savedEmailOrPhone', validEmailOrPhone);
               } else {
                 dispatch(setRememberMe(false));
-                localStorage.removeItem('savedEmail');
+                localStorage.removeItem('savedEmailOrPhone');
               }
 
               dispatch(
@@ -217,19 +217,19 @@ export const LoginPage: React.FC = () => {
             )}
 
             <FormWrapper onSubmit={handleSubmit(onSubmit)}>
-              {/* Email Input */}
+              {/* Email or Mobile Input */}
               <TextInput
-                label="Email Address"
-                placeholder="admin@gis-erp.com"
-                type="email"
+                label="Email / Mobile Number"
+                placeholder="e.g. admin@gis-erp.com or 9876543210"
+                type="text"
                 icon={Mail}
-                error={errors.email}
+                error={errors.emailOrPhone}
                 required
-                {...register('email', {
-                  required: 'Email is required',
+                {...register('emailOrPhone', {
+                  required: 'Email or Mobile Number is required',
                   pattern: {
-                    value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
-                    message: 'Invalid email address',
+                    value: /^([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}|[0-9]{10})$/,
+                    message: 'Enter a valid email address or 10-digit mobile number',
                   },
                 })}
               />
