@@ -8,4 +8,10 @@ export const urls = {
   state_edit: "master/state/edit/",
   state_list: "master/state/list/",
   state_detail: "master/state/detail/",
+
+  // District Master
+  district_add: "master/district/add/",
+  district_edit: "master/district/edit/",
+  district_list: "master/district/list/",
+  district_detail: "master/district/detail/",
 };

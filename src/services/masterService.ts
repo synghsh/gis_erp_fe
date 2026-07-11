@@ -5,6 +5,10 @@ import type {
   EditStatePayload,
   ListStatesPayload,
   GetStateDetailPayload,
+  AddDistrictPayload,
+  EditDistrictPayload,
+  ListDistrictsPayload,
+  GetDistrictDetailPayload,
 } from "../models/masterModels";
 
 export const serviceClient = new RestService({
@@ -25,4 +29,20 @@ export const ListStatesService = (data: ListStatesPayload) => {
 
 export const GetStateDetailService = (data: GetStateDetailPayload) => {
   return serviceClient.post(urls.state_detail, data);
+};
+
+export const AddDistrictService = (data: AddDistrictPayload) => {
+  return serviceClient.post(urls.district_add, data);
+};
+
+export const EditDistrictService = (data: EditDistrictPayload) => {
+  return serviceClient.post(urls.district_edit, data);
+};
+
+export const ListDistrictsService = (data: ListDistrictsPayload) => {
+  return serviceClient.post(urls.district_list, data);
+};
+
+export const GetDistrictDetailService = (data: GetDistrictDetailPayload) => {
+  return serviceClient.post(urls.district_detail, data);
 };

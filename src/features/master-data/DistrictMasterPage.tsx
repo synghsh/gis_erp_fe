@@ -12,10 +12,18 @@ import SelectDropdown from '../../components/form/SelectDropdown';
 import Button from '../../components/Button';
 import Chips from '../../components/Chips';
 import FormWrapper from '../../components/form/FormWrapper';
-import { addDistrict, updateDistrict, deleteDistrict } from '../../store/slices/masterDataSlice';
-import type { DistrictRecord, StateRecord } from '../../store/slices/masterDataSlice';
+import { StateListingAction, DistrictListingAction, AddDistrictAction, EditDistrictAction } from '../../store/actions/masterAction';
 import { addToast } from '../../store/slices/globalSlice';
 import type { RootState, AppDispatch } from '../../store';
+
+export interface DistrictRecord {
+  id: number;
+  name: string;
+  code: string;
+  stateId: number;
+  stateName?: string;
+  status: 'Active' | 'Inactive';
+}
 
 const breadcrumbs = [
   { label: 'Master Data' },
@@ -32,8 +40,14 @@ interface DistrictFormInputs {
 export const DistrictMasterPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   
-  const states = useSelector((state: RootState) => state.masterData.states);
-  const districts = useSelector((state: RootState) => state.masterData.districts);
+  const statesList = useSelector((state: RootState) => state.master?.stateListing || []);
+  const districtsList = useSelector((state: RootState) => state.master?.districtListing || []);
+
+  // Fetch states and districts on mount
+  React.useEffect(() => {
+    dispatch(StateListingAction({}));
+    dispatch(DistrictListingAction({}));
+  }, [dispatch]);
 
   // States for filter and active items
   const [selectedStateFilter, setSelectedStateFilter] = useState<string>('');
@@ -50,15 +64,27 @@ export const DistrictMasterPage: React.FC = () => {
 
   // Map state options for Select dropdowns
   const stateOptions = useMemo(() => 
-    states.map(s => ({ value: s.id, label: s.name })), 
-    [states]
+    statesList.map((s: any) => ({ value: s.id, label: s.state_name })), 
+    [statesList]
   );
+
+  // Map backend listing to local record structures
+  const formattedDistricts = useMemo(() => {
+    return districtsList.map((d: any) => ({
+      id: d.id,
+      name: d.district_name,
+      code: d.district_code,
+      stateId: d.state_id,
+      stateName: d.state_name,
+      status: d.is_active ? 'Active' : 'Inactive'
+    }));
+  }, [districtsList]);
 
   // Filter districts based on State dropdown selection
   const filteredDistricts = useMemo(() => {
-    if (!selectedStateFilter) return districts;
-    return districts.filter(d => d.stateId === Number(selectedStateFilter));
-  }, [districts, selectedStateFilter]);
+    if (!selectedStateFilter) return formattedDistricts;
+    return formattedDistricts.filter((d: any) => d.stateId === Number(selectedStateFilter));
+  }, [formattedDistricts, selectedStateFilter]);
 
   const handleAddClick = () => {
     setActiveItem(null);
@@ -78,27 +104,55 @@ export const DistrictMasterPage: React.FC = () => {
   };
 
   const onSubmit = (data: DistrictFormInputs) => {
-    const formattedData = {
-      name: data.name,
-      code: data.code,
-      stateId: Number(data.stateId),
-      status: data.status
-    };
-
+    const isActive = data.status === 'Active';
     if (activeItem) {
-      dispatch(updateDistrict({ id: activeItem.id, ...formattedData }));
-      dispatch(addToast({ type: 'success', message: `District "${data.name}" updated successfully.` }));
+      dispatch(
+        EditDistrictAction(
+          {
+            id: activeItem.id,
+            state_id: Number(data.stateId),
+            district_code: data.code,
+            district_name: data.name,
+            is_active: isActive
+          },
+          () => {
+            dispatch(addToast({ type: 'success', message: `District "${data.name}" updated successfully.` }));
+            dispatch(DistrictListingAction({}));
+          }
+        )
+      );
     } else {
-      dispatch(addDistrict(formattedData));
-      dispatch(addToast({ type: 'success', message: `District "${data.name}" added successfully.` }));
+      dispatch(
+        AddDistrictAction(
+          {
+            state_id: Number(data.stateId),
+            district_code: data.code,
+            district_name: data.name
+          },
+          () => {
+            dispatch(addToast({ type: 'success', message: `District "${data.name}" added successfully.` }));
+            dispatch(DistrictListingAction({}));
+          }
+        )
+      );
     }
     setDrawerOpen(false);
   };
 
   const handleConfirmDelete = () => {
     if (activeItem) {
-      dispatch(deleteDistrict(activeItem.id));
-      dispatch(addToast({ type: 'success', message: `District "${activeItem.name}" deleted successfully.` }));
+      dispatch(
+        EditDistrictAction(
+          {
+            id: activeItem.id,
+            is_active: false
+          },
+          () => {
+            dispatch(addToast({ type: 'success', message: `District "${activeItem.name}" deactivated successfully.` }));
+            dispatch(DistrictListingAction({}));
+          }
+        )
+      );
     }
     setDeleteModalOpen(false);
   };
@@ -112,12 +166,9 @@ export const DistrictMasterPage: React.FC = () => {
       key: 'stateName',
       label: 'Parent State',
       sortable: true,
-      render: (row) => {
-        const parent = states.find(s => s.id === row.stateId);
-        return parent ? (
-          <span style={{ fontWeight: 600 }}>{parent.name}</span>
-        ) : <span>Unknown</span>;
-      }
+      render: (row) => (
+        <span style={{ fontWeight: 600 }}>{row.stateName || 'Unknown'}</span>
+      )
     },
     {
       key: 'status',
