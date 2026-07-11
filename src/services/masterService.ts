@@ -9,6 +9,10 @@ import type {
   EditDistrictPayload,
   ListDistrictsPayload,
   GetDistrictDetailPayload,
+  AddBlockPayload,
+  EditBlockPayload,
+  ListBlocksPayload,
+  GetBlockDetailPayload,
 } from "../models/masterModels";
 
 export const serviceClient = new RestService({
@@ -45,4 +49,20 @@ export const ListDistrictsService = (data: ListDistrictsPayload) => {
 
 export const GetDistrictDetailService = (data: GetDistrictDetailPayload) => {
   return serviceClient.post(urls.district_detail, data);
+};
+
+export const AddBlockService = (data: AddBlockPayload) => {
+  return serviceClient.post(urls.block_add, data);
+};
+
+export const EditBlockService = (data: EditBlockPayload) => {
+  return serviceClient.post(urls.block_edit, data);
+};
+
+export const ListBlocksService = (data: ListBlocksPayload) => {
+  return serviceClient.post(urls.block_list, data);
+};
+
+export const GetBlockDetailService = (data: GetBlockDetailPayload) => {
+  return serviceClient.post(urls.block_detail, data);
 };

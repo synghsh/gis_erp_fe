@@ -8,6 +8,11 @@ export const MasterServicesActionTypes = {
   District_Add_Success_Action: "[MASTER] District Add Success Action",
   District_Edit_Success_Action: "[MASTER] District Edit Success Action",
   District_Detail_Success_Action: "[MASTER] District Detail Success Action",
+
+  Block_Listing_Success_Action: "[MASTER] Block Listing Success Action",
+  Block_Add_Success_Action: "[MASTER] Block Add Success Action",
+  Block_Edit_Success_Action: "[MASTER] Block Edit Success Action",
+  Block_Detail_Success_Action: "[MASTER] Block Detail Success Action",
 } as const;
 
 const initialState = {
@@ -19,6 +24,16 @@ const initialState = {
   districtDetail: null,
   districtAddResult: null,
   districtEditResult: null,
+  blockListing: {
+    blocks: [],
+    total_count: 0,
+    total_pages: 0,
+    current_page: 1,
+    page_size: 10,
+  },
+  blockDetail: null,
+  blockAddResult: null,
+  blockEditResult: null,
 };
 
 export default function MasterReducer(
@@ -49,6 +64,18 @@ export default function MasterReducer(
 
     case MasterServicesActionTypes.District_Edit_Success_Action:
       return { ...state, districtEditResult: action.payload };
+
+    case MasterServicesActionTypes.Block_Listing_Success_Action:
+      return { ...state, blockListing: action.payload };
+
+    case MasterServicesActionTypes.Block_Detail_Success_Action:
+      return { ...state, blockDetail: action.payload };
+
+    case MasterServicesActionTypes.Block_Add_Success_Action:
+      return { ...state, blockAddResult: action.payload };
+
+    case MasterServicesActionTypes.Block_Edit_Success_Action:
+      return { ...state, blockEditResult: action.payload };
 
     default:
       return state;

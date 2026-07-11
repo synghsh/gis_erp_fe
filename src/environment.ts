@@ -14,4 +14,10 @@ export const urls = {
   district_edit: "master/district/edit/",
   district_list: "master/district/list/",
   district_detail: "master/district/detail/",
+
+  // Block Master
+  block_add: "master/block/add/",
+  block_edit: "master/block/edit/",
+  block_list: "master/block/list/",
+  block_detail: "master/block/detail/",
 };

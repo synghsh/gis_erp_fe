@@ -7,6 +7,10 @@ import {
   EditDistrictService,
   ListDistrictsService,
   GetDistrictDetailService,
+  AddBlockService,
+  EditBlockService,
+  ListBlocksService,
+  GetBlockDetailService,
 } from "../../services/masterService";
 import type {
   AddStatePayload,
@@ -17,6 +21,10 @@ import type {
   EditDistrictPayload,
   ListDistrictsPayload,
   GetDistrictDetailPayload,
+  AddBlockPayload,
+  EditBlockPayload,
+  ListBlocksPayload,
+  GetBlockDetailPayload,
 } from "../../models/masterModels";
 import {
   ApiCallErrorAction,
@@ -254,6 +262,128 @@ export const GetDistrictDetailAction = (payload: GetDistrictDetailPayload, succe
             payload: res.data?.Data?.district ?? res.data?.district ?? null,
           });
           if (successCallback) successCallback(res.data?.Data?.district ?? res.data?.district);
+        }
+      })
+      .catch((err) => {
+        dispatch(
+          ApiCallErrorAction(
+            err?.response?.data?.Errors || err?.response?.data || err,
+          ),
+        );
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const BlockListingAction = (payload: ListBlocksPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(
+      BeginApiCallAction({ count: 1, message: "Fetching blocks...", type: 2 }),
+    );
+    return ListBlocksService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Block_Listing_Success_Action,
+            payload: res.data?.Data ?? res.data ?? {},
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(
+          ApiCallErrorAction(
+            err?.response?.data?.Errors || err?.response?.data || err,
+          ),
+        );
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const AddBlockAction = (payload: AddBlockPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(
+      BeginApiCallAction({ count: 1, message: "Adding block...", type: 2 }),
+    );
+    return AddBlockService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Block_Add_Success_Action,
+            payload: res.data?.Data ?? res.data,
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(
+          ApiCallErrorAction(
+            err?.response?.data?.Errors || err?.response?.data || err,
+          ),
+        );
+        throw err;
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const EditBlockAction = (payload: EditBlockPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(
+      BeginApiCallAction({ count: 1, message: "Updating block...", type: 2 }),
+    );
+    return EditBlockService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Block_Edit_Success_Action,
+            payload: res.data?.Data ?? res.data,
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(
+          ApiCallErrorAction(
+            err?.response?.data?.Errors || err?.response?.data || err,
+          ),
+        );
+        throw err;
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const GetBlockDetailAction = (payload: GetBlockDetailPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(
+      BeginApiCallAction({ count: 1, message: "Fetching block detail...", type: 2 }),
+    );
+    return GetBlockDetailService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Block_Detail_Success_Action,
+            payload: res.data?.Data?.block ?? res.data?.block ?? null,
+          });
+          if (successCallback) successCallback(res.data?.Data?.block ?? res.data?.block);
         }
       })
       .catch((err) => {

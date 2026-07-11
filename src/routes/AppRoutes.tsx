@@ -5,6 +5,7 @@ import LoginPage from '../features/auth/LoginPage';
 import DashboardPage from '../features/dashboard/DashboardPage';
 import StateMasterPage from '../features/master-data/StateMasterPage';
 import DistrictMasterPage from '../features/master-data/DistrictMasterPage';
+import BlockMasterPage from '../features/master-data/BlockMasterPage';
 import RoleMasterPage from '../features/master-data/RoleMasterPage';
 import UserDetailsPage from '../features/user-management/UserDetailsPage';
 
@@ -34,10 +35,10 @@ export const AppRoutes: React.FC = () => {
         {/* Master Data */}
         <Route path="/master/state" element={<StateMasterPage />} />
         <Route path="/master/district" element={<DistrictMasterPage />} />
+        <Route path="/master/block" element={<BlockMasterPage />} />
         <Route path="/master/role" element={<RoleMasterPage />} />
         
         {/* Master Data Stub routes */}
-        <Route path="/master/block" element={<ComingSoonPage title="Block Master" />} />
         <Route path="/master/designation" element={<ComingSoonPage title="Designation Master" />} />
         
         {/* User Management */}
