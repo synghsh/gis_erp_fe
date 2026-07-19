@@ -19,6 +19,21 @@ import {
   EditDesignationService,
   ListDesignationsService,
   GetDesignationDetailService,
+  AddConductorService,
+  EditConductorService,
+  ListConductorsService,
+  GetConductorDetailService,
+  DeleteConductorService,
+  AddPoleService,
+  EditPoleService,
+  ListPolesService,
+  GetPoleDetailService,
+  DeletePoleService,
+  AddTransformerService,
+  EditTransformerService,
+  ListTransformersService,
+  GetTransformerDetailService,
+  DeleteTransformerService,
 } from "../../services/masterService";
 import type {
   AddStatePayload,
@@ -41,6 +56,21 @@ import type {
   EditDesignationPayload,
   ListDesignationsPayload,
   GetDesignationDetailPayload,
+  AddConductorPayload,
+  EditConductorPayload,
+  ListConductorsPayload,
+  GetConductorDetailPayload,
+  DeleteConductorPayload,
+  AddPolePayload,
+  EditPolePayload,
+  ListPolesPayload,
+  GetPoleDetailPayload,
+  DeletePolePayload,
+  AddTransformerPayload,
+  EditTransformerPayload,
+  ListTransformersPayload,
+  GetTransformerDetailPayload,
+  DeleteTransformerPayload,
 } from "../../models/masterModels";
 import {
   ApiCallErrorAction,
@@ -652,6 +682,378 @@ export const GetDesignationDetailAction = (payload: GetDesignationDetailPayload,
             err?.response?.data?.Errors || err?.response?.data || err,
           ),
         );
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+// Conductor Action Creators
+export const ConductorListingAction = (payload: ListConductorsPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(BeginApiCallAction({ count: 1, message: "Fetching conductors...", type: 2 }));
+    return ListConductorsService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Conductor_Listing_Success_Action,
+            payload: res.data?.Data ?? res.data ?? {},
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(ApiCallErrorAction(err?.response?.data?.Errors || err?.response?.data || err));
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const AddConductorAction = (payload: AddConductorPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(BeginApiCallAction({ count: 1, message: "Adding conductor...", type: 2 }));
+    return AddConductorService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Conductor_Add_Success_Action,
+            payload: res.data?.Data ?? res.data,
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(ApiCallErrorAction(err?.response?.data?.Errors || err?.response?.data || err));
+        throw err;
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const EditConductorAction = (payload: EditConductorPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(BeginApiCallAction({ count: 1, message: "Updating conductor...", type: 2 }));
+    return EditConductorService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Conductor_Edit_Success_Action,
+            payload: res.data?.Data ?? res.data,
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(ApiCallErrorAction(err?.response?.data?.Errors || err?.response?.data || err));
+        throw err;
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const GetConductorDetailAction = (payload: GetConductorDetailPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(BeginApiCallAction({ count: 1, message: "Fetching conductor detail...", type: 2 }));
+    return GetConductorDetailService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Conductor_Detail_Success_Action,
+            payload: res.data?.Data?.conductor ?? res.data?.conductor ?? null,
+          });
+          if (successCallback) successCallback(res.data?.Data?.conductor ?? res.data?.conductor);
+        }
+      })
+      .catch((err) => {
+        dispatch(ApiCallErrorAction(err?.response?.data?.Errors || err?.response?.data || err));
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const DeleteConductorAction = (payload: DeleteConductorPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(BeginApiCallAction({ count: 1, message: "Deleting conductor...", type: 2 }));
+    return DeleteConductorService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Conductor_Delete_Success_Action,
+            payload: res.data?.Data ?? res.data,
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(ApiCallErrorAction(err?.response?.data?.Errors || err?.response?.data || err));
+        throw err;
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+// Pole Action Creators
+export const PoleListingAction = (payload: ListPolesPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(BeginApiCallAction({ count: 1, message: "Fetching poles...", type: 2 }));
+    return ListPolesService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Pole_Listing_Success_Action,
+            payload: res.data?.Data ?? res.data ?? {},
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(ApiCallErrorAction(err?.response?.data?.Errors || err?.response?.data || err));
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const AddPoleAction = (payload: AddPolePayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(BeginApiCallAction({ count: 1, message: "Adding pole...", type: 2 }));
+    return AddPoleService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Pole_Add_Success_Action,
+            payload: res.data?.Data ?? res.data,
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(ApiCallErrorAction(err?.response?.data?.Errors || err?.response?.data || err));
+        throw err;
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const EditPoleAction = (payload: EditPolePayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(BeginApiCallAction({ count: 1, message: "Updating pole...", type: 2 }));
+    return EditPoleService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Pole_Edit_Success_Action,
+            payload: res.data?.Data ?? res.data,
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(ApiCallErrorAction(err?.response?.data?.Errors || err?.response?.data || err));
+        throw err;
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const GetPoleDetailAction = (payload: GetPoleDetailPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(BeginApiCallAction({ count: 1, message: "Fetching pole detail...", type: 2 }));
+    return GetPoleDetailService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Pole_Detail_Success_Action,
+            payload: res.data?.Data?.pole ?? res.data?.pole ?? null,
+          });
+          if (successCallback) successCallback(res.data?.Data?.pole ?? res.data?.pole);
+        }
+      })
+      .catch((err) => {
+        dispatch(ApiCallErrorAction(err?.response?.data?.Errors || err?.response?.data || err));
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const DeletePoleAction = (payload: DeletePolePayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(BeginApiCallAction({ count: 1, message: "Deleting pole...", type: 2 }));
+    return DeletePoleService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Pole_Delete_Success_Action,
+            payload: res.data?.Data ?? res.data,
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(ApiCallErrorAction(err?.response?.data?.Errors || err?.response?.data || err));
+        throw err;
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+// Transformer Action Creators
+export const TransformerListingAction = (payload: ListTransformersPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(BeginApiCallAction({ count: 1, message: "Fetching transformers...", type: 2 }));
+    return ListTransformersService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Transformer_Listing_Success_Action,
+            payload: res.data?.Data ?? res.data ?? {},
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(ApiCallErrorAction(err?.response?.data?.Errors || err?.response?.data || err));
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const AddTransformerAction = (payload: AddTransformerPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(BeginApiCallAction({ count: 1, message: "Adding transformer...", type: 2 }));
+    return AddTransformerService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Transformer_Add_Success_Action,
+            payload: res.data?.Data ?? res.data,
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(ApiCallErrorAction(err?.response?.data?.Errors || err?.response?.data || err));
+        throw err;
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const EditTransformerAction = (payload: EditTransformerPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(BeginApiCallAction({ count: 1, message: "Updating transformer...", type: 2 }));
+    return EditTransformerService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Transformer_Edit_Success_Action,
+            payload: res.data?.Data ?? res.data,
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(ApiCallErrorAction(err?.response?.data?.Errors || err?.response?.data || err));
+        throw err;
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const GetTransformerDetailAction = (payload: GetTransformerDetailPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(BeginApiCallAction({ count: 1, message: "Fetching transformer detail...", type: 2 }));
+    return GetTransformerDetailService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Transformer_Detail_Success_Action,
+            payload: res.data?.Data?.transformer ?? res.data?.transformer ?? null,
+          });
+          if (successCallback) successCallback(res.data?.Data?.transformer ?? res.data?.transformer);
+        }
+      })
+      .catch((err) => {
+        dispatch(ApiCallErrorAction(err?.response?.data?.Errors || err?.response?.data || err));
+      })
+      .finally(() => {
+        dispatch(StopLoadingAction({ count: 1 }));
+      });
+  };
+};
+
+export const DeleteTransformerAction = (payload: DeleteTransformerPayload, successCallback?: (data: any) => void) => {
+  return (dispatch: any) => {
+    dispatch(BeginApiCallAction({ count: 1, message: "Deleting transformer...", type: 2 }));
+    return DeleteTransformerService(payload)
+      .then((res) => {
+        if (res.status !== 200) {
+          dispatch(ApiCallErrorAction(res.data?.Data));
+        } else {
+          dispatch({
+            type: MasterServicesActionTypes.Transformer_Delete_Success_Action,
+            payload: res.data?.Data ?? res.data,
+          });
+          if (successCallback) successCallback(res.data?.Data ?? res.data);
+        }
+      })
+      .catch((err) => {
+        dispatch(ApiCallErrorAction(err?.response?.data?.Errors || err?.response?.data || err));
+        throw err;
       })
       .finally(() => {
         dispatch(StopLoadingAction({ count: 1 }));

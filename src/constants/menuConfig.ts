@@ -42,6 +42,21 @@ export const menuConfig: MenuItem[] = [
         path: '/master/role',
         icon: 'ShieldAlert',
       },
+      {
+        title: 'Conductor Master',
+        path: '/master/conductor',
+        icon: 'Activity',
+      },
+      {
+        title: 'Pole Master',
+        path: '/master/pole',
+        icon: 'Server',
+      },
+      {
+        title: 'Transformer Master',
+        path: '/master/transformer',
+        icon: 'Zap',
+      },
     ],
   },
   {

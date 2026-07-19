@@ -21,6 +21,21 @@ import type {
   EditDesignationPayload,
   ListDesignationsPayload,
   GetDesignationDetailPayload,
+  AddConductorPayload,
+  EditConductorPayload,
+  ListConductorsPayload,
+  GetConductorDetailPayload,
+  DeleteConductorPayload,
+  AddPolePayload,
+  EditPolePayload,
+  ListPolesPayload,
+  GetPoleDetailPayload,
+  DeletePolePayload,
+  AddTransformerPayload,
+  EditTransformerPayload,
+  ListTransformersPayload,
+  GetTransformerDetailPayload,
+  DeleteTransformerPayload,
 } from "../models/masterModels";
 
 export const serviceClient = new RestService({
@@ -105,6 +120,57 @@ export const ListDesignationsService = (data: ListDesignationsPayload) => {
 
 export const GetDesignationDetailService = (data: GetDesignationDetailPayload) => {
   return serviceClient.post(urls.designation_detail, data);
+};
+
+// Conductor Services
+export const AddConductorService = (data: AddConductorPayload) => {
+  return serviceClient.post(urls.conductor_add, data);
+};
+export const EditConductorService = (data: EditConductorPayload) => {
+  return serviceClient.post(urls.conductor_edit, data);
+};
+export const ListConductorsService = (data: ListConductorsPayload) => {
+  return serviceClient.post(urls.conductor_list, data);
+};
+export const GetConductorDetailService = (data: GetConductorDetailPayload) => {
+  return serviceClient.post(urls.conductor_detail, data);
+};
+export const DeleteConductorService = (data: DeleteConductorPayload) => {
+  return serviceClient.post(urls.conductor_delete, data);
+};
+
+// Pole Services
+export const AddPoleService = (data: AddPolePayload) => {
+  return serviceClient.post(urls.pole_add, data);
+};
+export const EditPoleService = (data: EditPolePayload) => {
+  return serviceClient.post(urls.pole_edit, data);
+};
+export const ListPolesService = (data: ListPolesPayload) => {
+  return serviceClient.post(urls.pole_list, data);
+};
+export const GetPoleDetailService = (data: GetPoleDetailPayload) => {
+  return serviceClient.post(urls.pole_detail, data);
+};
+export const DeletePoleService = (data: DeletePolePayload) => {
+  return serviceClient.post(urls.pole_delete, data);
+};
+
+// Transformer Services
+export const AddTransformerService = (data: AddTransformerPayload) => {
+  return serviceClient.post(urls.transformer_add, data);
+};
+export const EditTransformerService = (data: EditTransformerPayload) => {
+  return serviceClient.post(urls.transformer_edit, data);
+};
+export const ListTransformersService = (data: ListTransformersPayload) => {
+  return serviceClient.post(urls.transformer_list, data);
+};
+export const GetTransformerDetailService = (data: GetTransformerDetailPayload) => {
+  return serviceClient.post(urls.transformer_detail, data);
+};
+export const DeleteTransformerService = (data: DeleteTransformerPayload) => {
+  return serviceClient.post(urls.transformer_delete, data);
 };
 
 // Force HMR reload comment

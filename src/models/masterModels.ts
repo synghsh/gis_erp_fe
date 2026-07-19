@@ -124,3 +124,94 @@ export interface ListDesignationsPayload {
 export interface GetDesignationDetailPayload {
   id: number;
 }
+
+// Conductor Payload Interfaces
+export interface AddConductorPayload {
+  conductor_name: string;
+  conductor_code: string;
+  description?: string;
+}
+
+export interface EditConductorPayload {
+  id: number;
+  conductor_name?: string;
+  conductor_code?: string;
+  description?: string;
+  is_active?: boolean;
+}
+
+export interface ListConductorsPayload {
+  search?: string;
+  is_active?: boolean;
+  page_no?: number;
+  page_size?: number;
+}
+
+export interface GetConductorDetailPayload {
+  id: number;
+}
+
+export interface DeleteConductorPayload {
+  id: number;
+}
+
+// Pole Payload Interfaces
+export interface AddPolePayload {
+  pole_name: string;
+  pole_code: string;
+  description?: string;
+}
+
+export interface EditPolePayload {
+  id: number;
+  pole_name?: string;
+  pole_code?: string;
+  description?: string;
+  is_active?: boolean;
+}
+
+export interface ListPolesPayload {
+  search?: string;
+  is_active?: boolean;
+  page_no?: number;
+  page_size?: number;
+}
+
+export interface GetPoleDetailPayload {
+  id: number;
+}
+
+export interface DeletePolePayload {
+  id: number;
+}
+
+// Transformer Payload Interfaces
+export interface AddTransformerPayload {
+  transformer_name: string;
+  transformer_code: string;
+  description?: string;
+}
+
+export interface EditTransformerPayload {
+  id: number;
+  transformer_name?: string;
+  transformer_code?: string;
+  description?: string;
+  is_active?: boolean;
+}
+
+export interface ListTransformersPayload {
+  search?: string;
+  is_active?: boolean;
+  page_no?: number;
+  page_size?: number;
+}
+
+export interface GetTransformerDetailPayload {
+  id: number;
+}
+
+export interface DeleteTransformerPayload {
+  id: number;
+}
+

@@ -32,4 +32,25 @@ export const urls = {
   designation_edit: "master/designation/edit/",
   designation_list: "master/designation/list/",
   designation_detail: "master/designation/detail/",
+
+  // Conductor Master
+  conductor_add: "master/conductor/add/",
+  conductor_edit: "master/conductor/edit/",
+  conductor_list: "master/conductor/list/",
+  conductor_detail: "master/conductor/detail/",
+  conductor_delete: "master/conductor/delete/",
+
+  // Pole Master
+  pole_add: "master/pole/add/",
+  pole_edit: "master/pole/edit/",
+  pole_list: "master/pole/list/",
+  pole_detail: "master/pole/detail/",
+  pole_delete: "master/pole/delete/",
+
+  // Transformer Master
+  transformer_add: "master/transformer/add/",
+  transformer_edit: "master/transformer/edit/",
+  transformer_list: "master/transformer/list/",
+  transformer_detail: "master/transformer/detail/",
+  transformer_delete: "master/transformer/delete/",
 };

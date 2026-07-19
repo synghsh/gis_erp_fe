@@ -23,6 +23,24 @@ export const MasterServicesActionTypes = {
   Designation_Add_Success_Action: "[MASTER] Designation Add Success Action",
   Designation_Edit_Success_Action: "[MASTER] Designation Edit Success Action",
   Designation_Detail_Success_Action: "[MASTER] Designation Detail Success Action",
+
+  Conductor_Listing_Success_Action: "[MASTER] Conductor Listing Success Action",
+  Conductor_Add_Success_Action: "[MASTER] Conductor Add Success Action",
+  Conductor_Edit_Success_Action: "[MASTER] Conductor Edit Success Action",
+  Conductor_Detail_Success_Action: "[MASTER] Conductor Detail Success Action",
+  Conductor_Delete_Success_Action: "[MASTER] Conductor Delete Success Action",
+
+  Pole_Listing_Success_Action: "[MASTER] Pole Listing Success Action",
+  Pole_Add_Success_Action: "[MASTER] Pole Add Success Action",
+  Pole_Edit_Success_Action: "[MASTER] Pole Edit Success Action",
+  Pole_Detail_Success_Action: "[MASTER] Pole Detail Success Action",
+  Pole_Delete_Success_Action: "[MASTER] Pole Delete Success Action",
+
+  Transformer_Listing_Success_Action: "[MASTER] Transformer Listing Success Action",
+  Transformer_Add_Success_Action: "[MASTER] Transformer Add Success Action",
+  Transformer_Edit_Success_Action: "[MASTER] Transformer Edit Success Action",
+  Transformer_Detail_Success_Action: "[MASTER] Transformer Detail Success Action",
+  Transformer_Delete_Success_Action: "[MASTER] Transformer Delete Success Action",
 } as const;
 
 const initialState = {
@@ -64,6 +82,42 @@ const initialState = {
   designationDetail: null,
   designationAddResult: null,
   designationEditResult: null,
+
+  conductorListing: {
+    conductors: [],
+    total_count: 0,
+    total_pages: 0,
+    current_page: 1,
+    page_size: 10,
+  },
+  conductorDetail: null,
+  conductorAddResult: null,
+  conductorEditResult: null,
+  conductorDeleteResult: null,
+
+  poleListing: {
+    poles: [],
+    total_count: 0,
+    total_pages: 0,
+    current_page: 1,
+    page_size: 10,
+  },
+  poleDetail: null,
+  poleAddResult: null,
+  poleEditResult: null,
+  poleDeleteResult: null,
+
+  transformerListing: {
+    transformers: [],
+    total_count: 0,
+    total_pages: 0,
+    current_page: 1,
+    page_size: 10,
+  },
+  transformerDetail: null,
+  transformerAddResult: null,
+  transformerEditResult: null,
+  transformerDeleteResult: null,
 };
 
 export default function MasterReducer(
@@ -130,6 +184,39 @@ export default function MasterReducer(
 
     case MasterServicesActionTypes.Designation_Edit_Success_Action:
       return { ...state, designationEditResult: action.payload };
+
+    case MasterServicesActionTypes.Conductor_Listing_Success_Action:
+      return { ...state, conductorListing: action.payload };
+    case MasterServicesActionTypes.Conductor_Detail_Success_Action:
+      return { ...state, conductorDetail: action.payload };
+    case MasterServicesActionTypes.Conductor_Add_Success_Action:
+      return { ...state, conductorAddResult: action.payload };
+    case MasterServicesActionTypes.Conductor_Edit_Success_Action:
+      return { ...state, conductorEditResult: action.payload };
+    case MasterServicesActionTypes.Conductor_Delete_Success_Action:
+      return { ...state, conductorDeleteResult: action.payload };
+
+    case MasterServicesActionTypes.Pole_Listing_Success_Action:
+      return { ...state, poleListing: action.payload };
+    case MasterServicesActionTypes.Pole_Detail_Success_Action:
+      return { ...state, poleDetail: action.payload };
+    case MasterServicesActionTypes.Pole_Add_Success_Action:
+      return { ...state, poleAddResult: action.payload };
+    case MasterServicesActionTypes.Pole_Edit_Success_Action:
+      return { ...state, poleEditResult: action.payload };
+    case MasterServicesActionTypes.Pole_Delete_Success_Action:
+      return { ...state, poleDeleteResult: action.payload };
+
+    case MasterServicesActionTypes.Transformer_Listing_Success_Action:
+      return { ...state, transformerListing: action.payload };
+    case MasterServicesActionTypes.Transformer_Detail_Success_Action:
+      return { ...state, transformerDetail: action.payload };
+    case MasterServicesActionTypes.Transformer_Add_Success_Action:
+      return { ...state, transformerAddResult: action.payload };
+    case MasterServicesActionTypes.Transformer_Edit_Success_Action:
+      return { ...state, transformerEditResult: action.payload };
+    case MasterServicesActionTypes.Transformer_Delete_Success_Action:
+      return { ...state, transformerDeleteResult: action.payload };
 
     default:
       return state;
