@@ -1,4 +1,4 @@
-export const baseUrl = "http://127.0.0.1:8000/gis/administration/";
+export const baseUrl = "https://gis-backend-phi.vercel.app/gis/administration/";
 
 export const urls = {
   login_admin: "admin/login/",
