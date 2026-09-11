@@ -14,6 +14,8 @@ import TransformerMasterPage from '../features/master-data/TransformerMasterPage
 import UserDetailsPage from '../features/user-management/UserDetailsPage';
 import ErectionWorkPage from '../features/work-details/ErectionWorkPage';
 import SurveyWorkPage from '../features/work-details/SurveyWorkPage';
+import ErectionDetailPage from '../features/work-details/ErectionDetailPage';
+import SurveyDetailPage from '../features/work-details/SurveyDetailPage';
 
 // Simple Stub Component for other routes
 interface ComingSoonProps {
@@ -50,7 +52,9 @@ export const AppRoutes: React.FC = () => {
         
         {/* Work Details */}
         <Route path="/work-details/erection" element={<ErectionWorkPage />} />
+        <Route path="/work-details/erection/:id" element={<ErectionDetailPage />} />
         <Route path="/work-details/survey" element={<SurveyWorkPage />} />
+        <Route path="/work-details/survey/:id" element={<SurveyDetailPage />} />
         
         {/* User Management */}
         <Route path="/users/details" element={<UserDetailsPage />} />

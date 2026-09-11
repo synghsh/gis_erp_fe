@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
   Compass,
   CheckCircle2,
@@ -54,6 +55,7 @@ const breadcrumbs = [
 
 export const SurveyWorkPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -430,17 +432,18 @@ export const SurveyWorkPage: React.FC = () => {
     {
       key: 'actions',
       label: 'Actions',
-      width: '100px',
+      width: '110px',
       render: (row) => (
         <button
           type="button"
           className="header-action-btn"
-          style={{ width: '32px', height: '32px', color: 'var(--accent-primary)' }}
-          onClick={() => handleViewDetails(row)}
-          title="Inspect Survey Path & Nodes"
+          style={{ width: 'auto', padding: '6px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--accent-primary)', borderRadius: '6px' }}
+          onClick={() => navigate(`/work-details/survey/${row.id}`)}
+          title="View Full Survey Line Details"
           aria-label="View Details"
         >
           <Eye size={15} />
+          <span style={{ fontSize: '12px', fontWeight: 600 }}>View</span>
         </button>
       ),
     },
