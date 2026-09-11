@@ -173,5 +173,7 @@ export const DeleteTransformerService = (data: DeleteTransformerPayload) => {
   return serviceClient.post(urls.transformer_delete, data);
 };
 
-// Force HMR reload comment
-
+// Contractor Services
+export const ListContractorsService = (data: { search?: string; is_active?: boolean; page_size?: number } = {}) => {
+  return serviceClient.post(urls.contractor_list, data);
+};

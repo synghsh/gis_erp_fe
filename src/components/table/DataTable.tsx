@@ -18,6 +18,8 @@ export interface DataTableProps<T> {
   initialRowsPerPage?: number;
   rowsPerPageOptions?: number[];
   actionsHeader?: React.ReactNode;
+  hideFooter?: boolean;
+  hideSearch?: boolean;
 }
 
 interface SortConfig {
@@ -33,6 +35,8 @@ export function DataTable<T extends Record<string, any>>({
   initialRowsPerPage = 5,
   rowsPerPageOptions = [5, 10, 20, 50],
   actionsHeader,
+  hideFooter = false,
+  hideSearch = false,
 }: DataTableProps<T>): React.JSX.Element {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'asc' });
@@ -94,9 +98,10 @@ export function DataTable<T extends Record<string, any>>({
 
   // Paginated Data
   const paginatedData = useMemo(() => {
+    if (hideFooter) return processedData;
     const start = (currentPage - 1) * rowsPerPage;
     return processedData.slice(start, start + rowsPerPage);
-  }, [processedData, currentPage, rowsPerPage]);
+  }, [processedData, currentPage, rowsPerPage, hideFooter]);
 
   const totalPages = Math.ceil(processedData.length / rowsPerPage) || 1;
 
@@ -108,21 +113,27 @@ export function DataTable<T extends Record<string, any>>({
   return (
     <div className="table-card">
       {/* Table Toolbar Controls */}
-      <div className="table-toolbar">
-        <div className="table-search-box">
-          <Search size={18} className="search-icon" />
-          <input
-            type="text"
-            className="search-input"
-            placeholder={searchPlaceholder}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+      {(!hideSearch || actionsHeader) && (
+        <div className="table-toolbar">
+          {!hideSearch && (
+            <div className="table-search-box">
+              <Search size={18} className="search-icon" />
+              <input
+                type="text"
+                className="search-input"
+                placeholder={searchPlaceholder}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          )}
+          {actionsHeader && (
+            <div className="table-actions-container">
+              {actionsHeader}
+            </div>
+          )}
         </div>
-        <div className="table-actions-container">
-          {actionsHeader}
-        </div>
-      </div>
+      )}
 
       {/* Main Responsive Grid Layout */}
       <div className="table-responsive-container">
@@ -177,74 +188,76 @@ export function DataTable<T extends Record<string, any>>({
       </div>
 
       {/* Table Pagination Controls */}
-      <div className="table-pagination">
-        <div className="pagination-info">
-          Showing{' '}
-          <span className="bold-info">
-            {processedData.length === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1}
-          </span>{' '}
-          to{' '}
-          <span className="bold-info">
-            {Math.min(currentPage * rowsPerPage, processedData.length)}
-          </span>{' '}
-          of <span className="bold-info">{processedData.length}</span> entries
-        </div>
-        
-        <div className="pagination-controls">
-          <div className="rows-per-page">
-            <span className="rows-label">Rows per page:</span>
-            <select
-              value={rowsPerPage}
-              onChange={(e) => setRowsPerPage(Number(e.target.value))}
-              className="rows-select"
-            >
-              {rowsPerPageOptions.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
+      {!hideFooter && (
+        <div className="table-pagination">
+          <div className="pagination-info">
+            Showing{' '}
+            <span className="bold-info">
+              {processedData.length === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1}
+            </span>{' '}
+            to{' '}
+            <span className="bold-info">
+              {Math.min(currentPage * rowsPerPage, processedData.length)}
+            </span>{' '}
+            of <span className="bold-info">{processedData.length}</span> entries
           </div>
+          
+          <div className="pagination-controls">
+            <div className="rows-per-page">
+              <span className="rows-label">Rows per page:</span>
+              <select
+                value={rowsPerPage}
+                onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                className="rows-select"
+              >
+                {rowsPerPageOptions.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <div className="page-buttons">
-            <button
-              onClick={() => setCurrentPage(1)}
-              disabled={currentPage === 1}
-              className="page-btn"
-              aria-label="First page"
-            >
-              First
-            </button>
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              disabled={currentPage === 1}
-              className="page-btn icon-page-btn"
-              aria-label="Previous page"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <span className="page-current-indicator">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="page-btn icon-page-btn"
-              aria-label="Next page"
-            >
-              <ChevronRight size={16} />
-            </button>
-            <button
-              onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages}
-              className="page-btn"
-              aria-label="Last page"
-            >
-              Last
-            </button>
+            <div className="page-buttons">
+              <button
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                className="page-btn"
+                aria-label="First page"
+              >
+                First
+              </button>
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                disabled={currentPage === 1}
+                className="page-btn icon-page-btn"
+                aria-label="Previous page"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span className="page-current-indicator">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="page-btn icon-page-btn"
+                aria-label="Next page"
+              >
+                <ChevronRight size={16} />
+              </button>
+              <button
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+                className="page-btn"
+                aria-label="Last page"
+              >
+                Last
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

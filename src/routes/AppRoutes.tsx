@@ -12,6 +12,8 @@ import ConductorMasterPage from '../features/master-data/ConductorMasterPage';
 import PoleMasterPage from '../features/master-data/PoleMasterPage';
 import TransformerMasterPage from '../features/master-data/TransformerMasterPage';
 import UserDetailsPage from '../features/user-management/UserDetailsPage';
+import ErectionWorkPage from '../features/work-details/ErectionWorkPage';
+import SurveyWorkPage from '../features/work-details/SurveyWorkPage';
 
 // Simple Stub Component for other routes
 interface ComingSoonProps {
@@ -45,6 +47,10 @@ export const AppRoutes: React.FC = () => {
         <Route path="/master/conductor" element={<ConductorMasterPage />} />
         <Route path="/master/pole" element={<PoleMasterPage />} />
         <Route path="/master/transformer" element={<TransformerMasterPage />} />
+        
+        {/* Work Details */}
+        <Route path="/work-details/erection" element={<ErectionWorkPage />} />
+        <Route path="/work-details/survey" element={<SurveyWorkPage />} />
         
         {/* User Management */}
         <Route path="/users/details" element={<UserDetailsPage />} />

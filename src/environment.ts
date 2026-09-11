@@ -1,4 +1,6 @@
-export const baseUrl = "https://gis-backend-phi.vercel.app/gis/administration/";
+export const baseUrl =
+  import.meta.env.VITE_API_BASE_URL ||
+  "http://127.0.0.1:8000/gis/administration/";
 
 export const urls = {
   login_admin: "admin/login/",
@@ -53,4 +55,15 @@ export const urls = {
   transformer_list: "master/transformer/list/",
   transformer_detail: "master/transformer/detail/",
   transformer_delete: "master/transformer/delete/",
+
+  // Contractor Master
+  contractor_list: "master/contractor/list/",
+
+  // Erection Work
+  erection_list: "erection/list/",
+  erection_detail: "erection/detail/",
+
+  // Survey Work
+  survey_list: "survey/list/",
+  survey_detail: "survey/detail/",
 };

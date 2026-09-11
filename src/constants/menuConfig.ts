@@ -60,6 +60,23 @@ export const menuConfig: MenuItem[] = [
     ],
   },
   {
+    title: 'Work Details',
+    key: 'work-details',
+    icon: 'Briefcase',
+    children: [
+      {
+        title: 'Erection Work',
+        path: '/work-details/erection',
+        icon: 'Hammer',
+      },
+      {
+        title: 'Survey Work',
+        path: '/work-details/survey',
+        icon: 'Compass',
+      },
+    ],
+  },
+  {
     title: 'User Management',
     key: 'user-management',
     icon: 'Users',
