@@ -2,13 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { ErectionNodeDetail, SurveyNodeDetail } from '../../models/workModels';
-import { Maximize2, Minimize2, ZoomIn, ZoomOut, Compass, Navigation } from 'lucide-react';
+import { Maximize2, Minimize2, ZoomIn, ZoomOut, Compass, Search, Layers, Navigation, Zap, Box, Cpu } from 'lucide-react';
 
 interface WorkDetailMapProps {
   nodes: (ErectionNodeDetail | SurveyNodeDetail)[];
   lineTitle: string;
   height?: string;
   defaultZoom?: number;
+  totalRouteLengthMeters?: number;
+  totalPoles?: number;
+  totalDtrs?: number;
 }
 
 export const WorkDetailMap: React.FC<WorkDetailMapProps> = ({
@@ -16,12 +19,21 @@ export const WorkDetailMap: React.FC<WorkDetailMapProps> = ({
   lineTitle,
   height = '480px',
   defaultZoom = 14,
+  totalRouteLengthMeters,
+  totalPoles,
+  totalDtrs,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersGroupRef = useRef<L.LayerGroup | null>(null);
   const polylineGroupRef = useRef<L.LayerGroup | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Computed fallbacks if props not passed explicitly
+  const poleCount = totalPoles ?? nodes.filter((n) => n.node_type === 'POLE').length;
+  const dtrCount = totalDtrs ?? nodes.filter((n) => n.node_type === 'DTR').length;
+  const routeLengthM = totalRouteLengthMeters ?? nodes.reduce((acc, n) => acc + (n.distance_to_prev_meters || 0), 0);
+  const routeLengthStr = routeLengthM >= 1000 ? `${(routeLengthM / 1000).toFixed(2)} km` : `${Math.round(routeLengthM)} m`;
 
   // Initialize Map
   useEffect(() => {
@@ -34,7 +46,7 @@ export const WorkDetailMap: React.FC<WorkDetailMapProps> = ({
         attributionControl: false,
       });
 
-      // CartoDB Positron / OSM tiles for crisp, clean look
+      // CartoDB Voyager tiles for crisp, clean map
       L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         maxZoom: 19,
         subdomains: 'abcd',
@@ -81,128 +93,113 @@ export const WorkDetailMap: React.FC<WorkDetailMapProps> = ({
       const isDTR = node.node_type === 'DTR';
       const isNew = node.is_new_pole !== false;
 
-      // Custom DivIcon
-      let markerClass = 'marker-new-pole';
-      let badgeText = 'NEW';
-      let iconSymbol = '📍';
+      // Clean circle dot marker matching screenshot
+      let dotColor = '#2563eb'; // blue for new pole
+      let dotBorder = '#ffffff';
+      let markerTypeClass = 'marker-dot-new-pole';
+      let badgeLabel = 'New Pole';
 
       if (isDTR) {
-        markerClass = isNew ? 'marker-dtr-new' : 'marker-dtr-old';
-        badgeText = isNew ? 'DTR (NEW)' : 'DTR (OLD)';
-        iconSymbol = '⚡';
+        dotColor = '#10b981'; // green for DTR
+        markerTypeClass = 'marker-dot-dtr';
+        badgeLabel = 'DTR Node';
       } else if (!isNew) {
-        markerClass = 'marker-old-pole';
-        badgeText = 'OLD';
-        iconSymbol = '🪵';
-      } else {
-        markerClass = 'marker-new-pole';
-        badgeText = 'NEW';
-        iconSymbol = '⚡';
+        dotColor = '#f59e0b'; // amber/orange for old pole
+        markerTypeClass = 'marker-dot-old-pole';
+        badgeLabel = 'Old Pole';
       }
 
       const customIcon = L.divIcon({
-        className: 'custom-leaflet-marker-wrapper',
+        className: 'topology-node-icon-wrapper',
         html: `
-          <div class="custom-node-marker ${markerClass}">
-            <div class="marker-pulse"></div>
-            <div class="marker-content">
-              <span class="marker-icon">${iconSymbol}</span>
-              <span class="marker-title">${node.name_label || `Node ${index + 1}`}</span>
+          <div class="topology-pin ${markerTypeClass}" style="--pin-color: ${dotColor};">
+            <div class="pin-ring"></div>
+            <div class="pin-dot">
+              ${isDTR ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>' : ''}
             </div>
-            <span class="marker-status-badge">${badgeText}</span>
+            <span class="pin-label">${node.name_label || `N${index + 1}`}</span>
           </div>
         `,
-        iconSize: [80, 50],
-        iconAnchor: [40, 48],
-        popupAnchor: [0, -48],
+        iconSize: [60, 40],
+        iconAnchor: [30, 20],
+        popupAnchor: [0, -22],
       });
 
-      // Create popup content
+      // Conductor info
       const conductorInfo = ('conductor_name' in node && node.conductor_name)
         ? node.conductor_name
-        : (node.attributes?.cableSize || 'ACSR / AB Cable');
+        : (node.attributes?.cableSize || '-');
 
       const distInfo = node.distance_to_prev_meters > 0
-        ? `${node.distance_to_prev_meters >= 1000 ? (node.distance_to_prev_meters / 1000).toFixed(2) + ' km' : node.distance_to_prev_meters + ' m'}`
-        : (index === 0 ? 'Starting Point (0 m)' : '0 m');
+        ? `${node.distance_to_prev_meters >= 1000 ? (node.distance_to_prev_meters / 1000).toFixed(2) + ' km' : Math.round(node.distance_to_prev_meters) + ' m'}`
+        : (index === 0 ? 'Starting Point' : '0 m');
 
-      const photosCount = node.images ? node.images.length : 0;
-
+      // Styled popup matching screenshot tooltip
       const popupHtml = `
-        <div class="map-popup-card">
-          <div class="map-popup-header ${markerClass}">
-            <span class="popup-title">${node.name_label}</span>
-            <span class="popup-badge">${node.structure_condition_label || (isDTR ? 'Transformer' : (isNew ? 'New Pole' : 'Old Pole'))}</span>
+        <div class="topology-map-popup">
+          <div class="popup-bubble-header ${isDTR ? 'dtr-header' : (isNew ? 'new-header' : 'old-header')}">
+            <div class="popup-title-row">
+              <strong>${node.name_label}</strong>
+              <span class="popup-type-tag">${badgeLabel}</span>
+            </div>
+            <div class="popup-cable-sub">${conductorInfo}</div>
           </div>
-          <div class="map-popup-body">
-            <div class="popup-row">
-              <span class="popup-label">Sequence:</span>
-              <span class="popup-value">#${node.sequence_number ?? index + 1}</span>
+          <div class="popup-bubble-body">
+            <div class="popup-stat-row">
+              <span>Sequence:</span>
+              <strong>#${node.sequence_number ?? index + 1}</strong>
             </div>
-            <div class="popup-row">
-              <span class="popup-label">Conductor:</span>
-              <span class="popup-value">${conductorInfo}</span>
+            <div class="popup-stat-row">
+              <span>Span to Prev:</span>
+              <strong style="color:#0ea5e9;">${distInfo}</strong>
             </div>
-            <div class="popup-row">
-              <span class="popup-label">Span Distance:</span>
-              <span class="popup-value highlight">${distInfo}</span>
+            <div class="popup-stat-row">
+              <span>GPS:</span>
+              <span class="popup-mono">${node.latitude.toFixed(6)}, ${node.longitude.toFixed(6)}</span>
             </div>
-            <div class="popup-row">
-              <span class="popup-label">GPS Lat/Lng:</span>
-              <span class="popup-value mono">${node.latitude.toFixed(6)}, ${node.longitude.toFixed(6)}</span>
-            </div>
-            ${photosCount > 0 ? `
-            <div class="popup-row">
-              <span class="popup-label">Photos:</span>
-              <span class="popup-value">${photosCount} captured</span>
+            ${isDTR && ('dtr_capacity_name' in node && node.dtr_capacity_name) ? `
+            <div class="popup-stat-row">
+              <span>Capacity:</span>
+              <strong>${node.dtr_capacity_name}</strong>
             </div>` : ''}
           </div>
         </div>
       `;
 
       const marker = L.marker(latLng, { icon: customIcon });
-      marker.bindPopup(popupHtml, { className: 'custom-leaflet-popup' });
+      marker.bindPopup(popupHtml, { className: 'custom-topology-popup' });
       markersGroupRef.current?.addLayer(marker);
 
-      // Distance indicator on segment midpoint
-      if (index > 0) {
+      // Distance pill between nodes on map
+      if (index > 0 && node.distance_to_prev_meters > 0) {
         const prevNode = validNodes[index - 1];
         const midLat = (prevNode.latitude + node.latitude) / 2;
         const midLng = (prevNode.longitude + node.longitude) / 2;
         const dist = node.distance_to_prev_meters;
+        const distLabel = dist >= 1000 ? `${(dist / 1000).toFixed(2)} km` : `${Math.round(dist)} m`;
 
-        if (dist > 0) {
-          const distLabel = dist >= 1000
-            ? `${(dist / 1000).toFixed(2)} km`
-            : `${Math.round(dist)} m`;
+        const distanceIcon = L.divIcon({
+          className: 'custom-span-pill-wrapper',
+          html: `<div class="span-map-badge">${distLabel}</div>`,
+          iconSize: [60, 20],
+          iconAnchor: [30, 10],
+        });
 
-          const distanceIcon = L.divIcon({
-            className: 'custom-distance-badge-wrapper',
-            html: `<div class="distance-pill" title="Span: ${prevNode.name_label} → ${node.name_label}">${distLabel}</div>`,
-            iconSize: [60, 24],
-            iconAnchor: [30, 12],
-          });
-
-          const distMarker = L.marker([midLat, midLng], {
-            icon: distanceIcon,
-            interactive: true,
-          });
-          distMarker.bindTooltip(
-            `<strong>Span Length:</strong> ${distLabel}<br><span style="color:#64748b;">${prevNode.name_label} &rarr; ${node.name_label}</span>`,
-            { direction: 'top', offset: [0, -10] }
-          );
-          markersGroupRef.current?.addLayer(distMarker);
-        }
+        const distMarker = L.marker([midLat, midLng], {
+          icon: distanceIcon,
+          interactive: false,
+        });
+        markersGroupRef.current?.addLayer(distMarker);
       }
     });
 
-    // Draw Conductor Polyline connecting all nodes
+    // Conductor Polyline (Solid line + subtle glow matching screenshot)
     if (latLngs.length > 1) {
       // Glow polyline
       const glowLine = L.polyline(latLngs, {
-        color: '#0284c7',
-        weight: 8,
-        opacity: 0.35,
+        color: '#2563eb',
+        weight: 6,
+        opacity: 0.25,
         lineCap: 'round',
         lineJoin: 'round',
       });
@@ -210,24 +207,23 @@ export const WorkDetailMap: React.FC<WorkDetailMapProps> = ({
 
       // Core conductor polyline
       const coreLine = L.polyline(latLngs, {
-        color: '#0ea5e9',
-        weight: 3.5,
+        color: '#2563eb',
+        weight: 3,
         opacity: 0.95,
-        dashArray: '6, 8',
       });
       polylineGroupRef.current?.addLayer(coreLine);
     }
 
-    // Fit map view to encompass all nodes
+    // Fit map view
     const bounds = L.latLngBounds(latLngs);
     if (bounds.isValid()) {
       map.fitBounds(bounds, {
-        padding: [50, 50],
+        padding: [60, 60],
         maxZoom: 17,
       });
     }
 
-    // Trigger resize after small delay
+    // Resize after render
     setTimeout(() => {
       map.invalidateSize();
     }, 200);
@@ -252,7 +248,7 @@ export const WorkDetailMap: React.FC<WorkDetailMapProps> = ({
         validNodes.map((n) => [n.latitude, n.longitude])
       );
       mapInstanceRef.current.fitBounds(bounds, {
-        padding: [50, 50],
+        padding: [60, 60],
         maxZoom: 17,
       });
     }
@@ -262,7 +258,7 @@ export const WorkDetailMap: React.FC<WorkDetailMapProps> = ({
     setIsFullscreen(!isFullscreen);
     setTimeout(() => {
       mapInstanceRef.current?.invalidateSize();
-    }, 200);
+    }, 250);
   };
 
   return (
@@ -270,77 +266,89 @@ export const WorkDetailMap: React.FC<WorkDetailMapProps> = ({
       className={`work-detail-map-wrapper ${isFullscreen ? 'map-fullscreen-mode' : ''}`}
       style={{ height: isFullscreen ? '100vh' : height }}
     >
-      {/* Map Header Overlay */}
-      <div className="map-top-bar">
-        <div className="map-title-chip">
-          <Navigation size={14} className="icon-pulse" />
-          <span>{lineTitle} &bull; Route Map</span>
-          <span className="nodes-pill">{nodes.length} Nodes</span>
-        </div>
-
-        {/* Floating Map Controls */}
-        <div className="map-controls-group">
-          <button
-            type="button"
-            className="map-control-btn"
-            onClick={handleFitBounds}
-            title="Fit to All Nodes"
-          >
-            <Compass size={16} />
-          </button>
-          <button
-            type="button"
-            className="map-control-btn"
-            onClick={handleZoomIn}
-            title="Zoom In"
-          >
-            <ZoomIn size={16} />
-          </button>
-          <button
-            type="button"
-            className="map-control-btn"
-            onClick={handleZoomOut}
-            title="Zoom Out"
-          >
-            <ZoomOut size={16} />
-          </button>
-          <button
-            type="button"
-            className="map-control-btn"
-            onClick={toggleFullscreen}
-            title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen Map'}
-          >
-            {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-          </button>
-        </div>
+      {/* Top Left Compass Rose Widget */}
+      <div className="map-compass-badge" title="North orientation">
+        <div className="compass-needle">▲</div>
+        <span className="compass-letter">N</span>
       </div>
 
-      {/* Map Canvas Container */}
+      {/* Floating Action Controls on Top Right */}
+      <div className="map-floating-controls">
+        <button
+          type="button"
+          className="map-round-btn"
+          onClick={handleFitBounds}
+          title="Reset to Fit All Nodes"
+        >
+          <Search size={15} />
+        </button>
+        <button
+          type="button"
+          className="map-round-btn"
+          onClick={handleZoomIn}
+          title="Zoom In"
+        >
+          <ZoomIn size={15} />
+        </button>
+        <button
+          type="button"
+          className="map-round-btn"
+          onClick={handleZoomOut}
+          title="Zoom Out"
+        >
+          <ZoomOut size={15} />
+        </button>
+        <button
+          type="button"
+          className="map-round-btn"
+          onClick={toggleFullscreen}
+          title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen Map'}
+        >
+          {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+        </button>
+      </div>
+
+      {/* Leaflet Map Canvas */}
       <div ref={mapContainerRef} className="map-leaflet-container" />
 
-      {/* Interactive Legend Overlay */}
-      <div className="map-legend-panel">
-        <div className="legend-item">
-          <span className="legend-indicator new-pole"></span>
-          <span>New Pole</span>
+      {/* Bottom-Left Floating Stats Overlay Widget */}
+      <div className="map-bottom-stats-card">
+        <div className="map-stat-col">
+          <div className="stat-col-icon cyan">
+            <Zap size={14} />
+          </div>
+          <div className="stat-col-info">
+            <span className="stat-col-label">Route Length</span>
+            <span className="stat-col-val">{routeLengthStr}</span>
+          </div>
         </div>
-        <div className="legend-item">
-          <span className="legend-indicator old-pole"></span>
-          <span>Old Pole</span>
+
+        <div className="stat-col-divider" />
+
+        <div className="map-stat-col">
+          <div className="stat-col-icon blue">
+            <Box size={14} />
+          </div>
+          <div className="stat-col-info">
+            <span className="stat-col-label">Poles</span>
+            <span className="stat-col-val">{poleCount}</span>
+          </div>
         </div>
-        <div className="legend-item">
-          <span className="legend-indicator dtr"></span>
-          <span>DTR Node</span>
-        </div>
-        <div className="legend-item">
-          <span className="legend-indicator conductor"></span>
-          <span>Conductor Line</span>
-        </div>
-        <div className="legend-item">
-          <span className="legend-indicator distance"></span>
-          <span>In-between Span</span>
+
+        <div className="stat-col-divider" />
+
+        <div className="map-stat-col">
+          <div className="stat-col-icon green">
+            <Cpu size={14} />
+          </div>
+          <div className="stat-col-info">
+            <span className="stat-col-label">DTRs</span>
+            <span className="stat-col-val">{dtrCount}</span>
+          </div>
         </div>
       </div>
     </div>
   );
 };
+
+export default WorkDetailMap;
