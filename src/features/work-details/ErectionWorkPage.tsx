@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -20,8 +20,16 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
-  Building2,
-  Briefcase
+  Briefcase,
+  X,
+  SlidersHorizontal,
+  ArrowUpRight,
+  Copy,
+  ChevronDown,
+  ChevronUp,
+  Activity,
+  Layers3,
+  ExternalLink
 } from 'lucide-react';
 import MainLayout from '../../components/layout/MainLayout';
 import DataTable from '../../components/table/DataTable';
@@ -47,6 +55,7 @@ import {
   type PaginationMeta
 } from '../../services/workService';
 import type { ErectionRecord, ErectionNode, ListErectionPayload } from '../../models/workModels';
+import './ErectionListing.css';
 import './WorkDetails.css';
 
 const breadcrumbs = [
@@ -62,7 +71,7 @@ export const ErectionWorkPage: React.FC = () => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [erections, setErections] = useState<ErectionRecord[]>([]);
 
-  // 10 Filter States
+  // Filter States
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [stateId, setStateId] = useState<string>('');
   const [districtId, setDistrictId] = useState<string>('');
@@ -75,6 +84,9 @@ export const ErectionWorkPage: React.FC = () => {
   const [endDate, setEndDate] = useState<string>('');
   const [pageSize, setPageSize] = useState<number | null>(10);
   const [pageIndex, setPageIndex] = useState<number>(1);
+
+  // UI state for advanced filter drawer collapse
+  const [isAdvancedFiltersOpen, setIsAdvancedFiltersOpen] = useState<boolean>(false);
 
   // Master Lists for dropdowns
   const [states, setStates] = useState<Array<{ id: number; state_name: string }>>([]);
@@ -90,7 +102,7 @@ export const ErectionWorkPage: React.FC = () => {
     page_size: 10,
   });
 
-  // Drawer details
+  // Drawer details for Quick Inspect
   const [selectedErection, setSelectedErection] = useState<ErectionRecord | null>(null);
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
   const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
@@ -144,8 +156,8 @@ export const ErectionWorkPage: React.FC = () => {
       .catch((e: any) => console.warn('Failed to load blocks:', e));
   }, [districtId]);
 
-  // Fetch erection executions from API with all 10 filters & pagination
-  const fetchErections = async (params: {
+  // Fetch erection executions from API
+  const fetchErections = useCallback(async (params: {
     targetPageIndex?: number;
     targetPageSize?: number | null;
     isRefresh?: boolean;
@@ -206,7 +218,7 @@ export const ErectionWorkPage: React.FC = () => {
       setPaginationMeta(meta);
 
       if (params.isRefresh) {
-        dispatch(addToast({ message: 'Erection listings refreshed successfully', type: 'success' }));
+        dispatch(addToast({ message: 'Erection records refreshed successfully', type: 'success' }));
       }
     } catch (err: any) {
       console.error('Failed to fetch erection executions:', err);
@@ -221,7 +233,10 @@ export const ErectionWorkPage: React.FC = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [
+    stateId, districtId, blockId, feeder, contractorId, lineType, status,
+    startDate, endDate, searchQuery, pageSize, pageIndex, dispatch
+  ]);
 
   useEffect(() => {
     fetchErections();
@@ -233,9 +248,19 @@ export const ErectionWorkPage: React.FC = () => {
     fetchErections({ targetPageIndex: 1 });
   };
 
+  const handleStatusSegmentChange = (newStatus: string) => {
+    setStatus(newStatus);
+    setPageIndex(1);
+    fetchErections({
+      targetPageIndex: 1,
+      overrideFilters: { status: newStatus },
+    });
+  };
+
   const handleResetFilters = () => {
     setStateId('');
     setDistrictId('');
+    setBlocks([]);
     setBlockId('');
     setFeeder('');
     setContractorId('');
@@ -262,6 +287,52 @@ export const ErectionWorkPage: React.FC = () => {
     });
   };
 
+  const handleRemoveSingleFilter = (filterKey: string) => {
+    const overrides: any = {};
+    if (filterKey === 'search') {
+      setSearchQuery('');
+      overrides.searchQuery = '';
+    } else if (filterKey === 'state') {
+      setStateId('');
+      setDistrictId('');
+      setBlockId('');
+      overrides.stateId = '';
+      overrides.districtId = '';
+      overrides.blockId = '';
+    } else if (filterKey === 'district') {
+      setDistrictId('');
+      setBlockId('');
+      overrides.districtId = '';
+      overrides.blockId = '';
+    } else if (filterKey === 'block') {
+      setBlockId('');
+      overrides.blockId = '';
+    } else if (filterKey === 'feeder') {
+      setFeeder('');
+      overrides.feeder = '';
+    } else if (filterKey === 'contractor') {
+      setContractorId('');
+      overrides.contractorId = '';
+    } else if (filterKey === 'lineType') {
+      setLineType('');
+      overrides.lineType = '';
+    } else if (filterKey === 'status') {
+      setStatus('all');
+      overrides.status = 'all';
+    } else if (filterKey === 'dateRange') {
+      setStartDate('');
+      setEndDate('');
+      overrides.startDate = '';
+      overrides.endDate = '';
+    }
+
+    setPageIndex(1);
+    fetchErections({
+      targetPageIndex: 1,
+      overrideFilters: overrides,
+    });
+  };
+
   const handlePageSizeChange = (newSize: number | null) => {
     setPageSize(newSize);
     setPageIndex(1);
@@ -275,7 +346,7 @@ export const ErectionWorkPage: React.FC = () => {
   };
 
   // Detailed view handler
-  const handleViewDetails = async (record: ErectionRecord) => {
+  const handleViewQuickDetails = async (record: ErectionRecord) => {
     setSelectedErection(record);
     setDrawerOpen(true);
     try {
@@ -292,12 +363,18 @@ export const ErectionWorkPage: React.FC = () => {
     }
   };
 
+  const handleCopyDrawingNo = (drawingNo: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(drawingNo);
+    dispatch(addToast({ message: `Copied ${drawingNo} to clipboard!`, type: 'info' }));
+  };
+
   // Safe list of erections
   const safeErections = useMemo(() => {
     return Array.isArray(erections) ? erections : [];
   }, [erections]);
 
-  // Active filters count badge
+  // Active filters count
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (stateId) count++;
@@ -307,89 +384,108 @@ export const ErectionWorkPage: React.FC = () => {
     if (contractorId) count++;
     if (lineType) count++;
     if (status !== 'all') count++;
-    if (startDate) count++;
-    if (endDate) count++;
+    if (startDate || endDate) count++;
     if (searchQuery.trim()) count++;
     return count;
   }, [stateId, districtId, blockId, feeder, contractorId, lineType, status, startDate, endDate, searchQuery]);
 
-  // KPIs based on total records
+  // Selected names for filter tags
+  const selectedStateName = useMemo(() => states.find(s => String(s.id) === stateId)?.state_name, [states, stateId]);
+  const selectedDistrictName = useMemo(() => districts.find(d => String(d.id) === districtId)?.district_name, [districts, districtId]);
+  const selectedBlockName = useMemo(() => blocks.find(b => String(b.id) === blockId)?.block_name, [blocks, blockId]);
+  const selectedContractorName = useMemo(() => contractors.find(c => String(c.id) === contractorId)?.contractor_name, [contractors, contractorId]);
+
+  // KPIs
   const totalExecutionsCount = paginationMeta.total_count || safeErections.length;
   const completedCount = safeErections.filter((e) => e.status === 2).length;
   const activeCount = safeErections.filter((e) => e.status === 1).length;
   const totalNodesCount = safeErections.reduce((acc, curr) => acc + (curr.nodes_count || (curr.nodes?.length || 0)), 0);
+  const completionRate = totalExecutionsCount > 0 ? Math.round((completedCount / (completedCount + activeCount || 1)) * 100) : 0;
 
   // Table Columns
   const columns: DataColumn<ErectionRecord>[] = [
     {
       key: 'drawing_no',
-      label: 'Drawing No / Ref',
+      label: 'Drawing No / Execution Ref',
       sortable: true,
-      width: '180px',
+      width: '210px',
       render: (row) => (
-        <div>
-          <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-            {row.drawing_no || `Erection #${row.id}`}
+        <div className="drawing-cell-wrapper">
+          <div className="drawing-title-row">
+            <span
+              className="drawing-title-text"
+              onClick={() => navigate(`/work-details/erection/${row.id}`)}
+              title="Click to open execution details"
+            >
+              {row.drawing_no || `Erection #${row.id}`}
+            </span>
+            <button
+              type="button"
+              className="filter-search-clear"
+              style={{ position: 'static' }}
+              onClick={(e) => handleCopyDrawingNo(row.drawing_no || `Erection #${row.id}`, e)}
+              title="Copy Drawing Number"
+            >
+              <Copy size={13} />
+            </button>
           </div>
-          <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
-            ID: #{row.id}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span className="drawing-id-pill">ID: #{row.id}</span>
+            {row.type_of_work_name && (
+              <span className="line-type-pill">{row.type_of_work_name}</span>
+            )}
+          </div>
         </div>
       ),
     },
     {
       key: 'feeder_name',
-      label: 'Feeder / DTR',
+      label: 'Feeder & DTR',
       sortable: true,
+      width: '180px',
       render: (row) => (
-        <div>
-          <div style={{ fontSize: '13.5px', color: 'var(--text-primary)', fontWeight: 500 }}>
-            {row.feeder_name || 'Standard Feeder'}
+        <div className="feeder-cell-wrapper">
+          <div className="feeder-name-text">
+            <Zap size={14} color="#0284c7" />
+            <span>{row.feeder_name || 'Standard Feeder'}</span>
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-            {row.dtr_code ? `DTR: ${row.dtr_code}` : 'No DTR code'}
-          </div>
+          {row.dtr_code ? (
+            <span className="dtr-tag-pill">DTR: {row.dtr_code}</span>
+          ) : (
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>No DTR assigned</span>
+          )}
         </div>
       ),
     },
     {
       key: 'district_name',
-      label: 'Location Details',
+      label: 'Geographical Scope',
       render: (row) => (
-        <div style={{ fontSize: '12.5px' }}>
-          <span style={{ color: 'var(--text-primary)' }}>
-            {row.district_name || 'Dist. N/A'}
-          </span>
-          <span style={{ color: 'var(--text-muted)' }}>
-            {row.block_name ? ` • ${row.block_name}` : ''}
+        <div className="geo-breadcrumb-cell">
+          <div className="geo-district-bold">
+            <MapPin size={13} color="var(--primary-color, #6366f1)" />
+            <span>{row.district_name || 'District N/A'}</span>
+          </div>
+          <div className="geo-block-village-sub">
+            {row.block_name ? `${row.block_name}` : ''}
             {row.village_name ? ` • ${row.village_name}` : ''}
-          </span>
+          </div>
         </div>
       ),
     },
     {
       key: 'contractor_name',
-      label: 'Contractor & Type',
+      label: 'Contractor & Surveyor',
       render: (row) => (
-        <div>
-          <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>
-            {row.contractor_name || 'N/A'}
+        <div className="contractor-cell-wrapper">
+          <div className="contractor-name-bold">
+            <Briefcase size={13} color="var(--text-secondary)" />
+            <span>{row.contractor_name || 'Direct / N/A'}</span>
           </div>
-          <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
-            {row.type_of_work_name || 'Standard Erection'}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: 'var(--text-muted)' }}>
+            <User size={12} />
+            <span>{row.surveyor_name || 'Unassigned Surveyor'}</span>
           </div>
-        </div>
-      ),
-    },
-    {
-      key: 'surveyor_name',
-      label: 'Field Surveyor',
-      render: (row) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <User size={13} color="var(--text-muted)" />
-          <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>
-            {row.surveyor_name || 'Assigned Surveyor'}
-          </span>
         </div>
       ),
     },
@@ -397,13 +493,13 @@ export const ErectionWorkPage: React.FC = () => {
       key: 'nodes_count',
       label: 'Erected Nodes',
       sortable: true,
-      width: '130px',
+      width: '140px',
       render: (row) => {
         const count = row.nodes_count || (row.nodes?.length || 0);
         return (
-          <span className="nodes-counter-badge">
-            <Zap size={13} color="#f59e0b" />
-            {count} {count === 1 ? 'Node' : 'Nodes'}
+          <span className={`nodes-counter-cell-badge ${count === 0 ? 'empty' : ''}`}>
+            <Layers size={13} />
+            <span>{count} {count === 1 ? 'Node' : 'Nodes'}</span>
           </span>
         );
       },
@@ -412,7 +508,7 @@ export const ErectionWorkPage: React.FC = () => {
       key: 'status',
       label: 'Status',
       sortable: true,
-      width: '120px',
+      width: '130px',
       render: (row) => (
         <Chips type={row.status === 2 ? 'success' : 'warning'}>
           {row.status === 2 ? 'Completed' : 'In Progress'}
@@ -423,306 +519,505 @@ export const ErectionWorkPage: React.FC = () => {
       key: 'created_on',
       label: 'Execution Date',
       sortable: true,
-      width: '150px',
+      width: '140px',
       render: (row) => (
-        <div style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>
-          {row.created_on || 'N/A'}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12.5px', color: 'var(--text-secondary)' }}>
+          <Calendar size={13} color="var(--text-muted)" />
+          <span>{row.created_on || 'N/A'}</span>
         </div>
       ),
     },
     {
       key: 'actions',
       label: 'Actions',
-      width: '110px',
+      width: '160px',
       render: (row) => (
-        <button
-          type="button"
-          className="header-action-btn"
-          style={{ width: 'auto', padding: '6px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--accent-primary)', borderRadius: '6px' }}
-          onClick={() => navigate(`/work-details/erection/${row.id}`)}
-          title="View Full Erection Execution Details"
-          aria-label="View Details"
-        >
-          <Eye size={15} />
-          <span style={{ fontSize: '12px', fontWeight: 600 }}>View</span>
-        </button>
+        <div className="table-actions-cell">
+          <button
+            type="button"
+            className="action-inspect-btn"
+            onClick={() => handleViewQuickDetails(row)}
+            title="Quick Inspect Nodes & Specifications"
+          >
+            <Eye size={13} />
+            <span>Inspect</span>
+          </button>
+          <button
+            type="button"
+            className="action-full-view-btn"
+            onClick={() => navigate(`/work-details/erection/${row.id}`)}
+            title="Open Full Execution Page"
+          >
+            <span>View</span>
+            <ArrowUpRight size={13} />
+          </button>
+        </div>
       ),
     },
   ];
 
   return (
     <MainLayout breadcrumbItems={breadcrumbs}>
-      <div className="work-page-container">
-        {/* Page Header */}
-        <div className="page-header-container">
-          <div>
-            <h2 className="page-header-title">Erection Work Details</h2>
-            <p className="page-header-sub">
-              Track real-time electrical erection executions, installed pole nodes, and structures
+      <div className="erection-page-wrapper">
+        {/* 1. Page Header & Actions Banner */}
+        <div className="erection-header-banner">
+          <div className="erection-header-title-group">
+            <div className="erection-header-badge-row">
+              <span className="erection-live-sync-pill">
+                <span className="sync-pulsing-dot" />
+                Live GIS Erection Records
+              </span>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                {totalExecutionsCount} Total Drawings Tracked
+              </span>
+            </div>
+            <h1 className="erection-header-title">
+              <Hammer size={24} color="#0284c7" />
+              Erection Work Details
+            </h1>
+            <p className="erection-header-sub">
+              Monitor real-time field erection executions, physical pole installation, transformers, and conductor progress
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
+
+          <div className="erection-header-actions">
             <button
               type="button"
-              className={`refresh-action-btn ${refreshing ? 'spinning' : ''}`}
-              onClick={() => fetchErections(true)}
+              className="header-action-btn-secondary"
+              onClick={() => fetchErections({ isRefresh: true })}
               disabled={loading || refreshing}
+              title="Refresh Records"
             >
-              <RefreshCw size={15} />
-              {refreshing ? 'Refreshing...' : 'Refresh List'}
+              <RefreshCw size={15} className={refreshing ? 'icon-spin' : ''} />
+              <span>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
             </button>
           </div>
         </div>
 
-        {/* Top KPI Metrics Cards */}
-        <div className="work-stats-grid">
-          <div className="work-stat-card">
-            <div className="stat-icon-wrapper blue">
-              <Hammer size={22} />
+        {/* 2. Executive KPI Metrics Cards Grid (Compact, Low Height) */}
+        <div className="erection-kpi-grid">
+          {/* KPI 1: Total Erections */}
+          <div className="erection-kpi-card blue">
+            <div className="kpi-main-group">
+              <div className="kpi-icon-circle blue">
+                <Hammer size={18} />
+              </div>
+              <div className="kpi-content">
+                <span className="kpi-metric-val">{totalExecutionsCount}</span>
+                <span className="kpi-metric-label">Total Erections</span>
+              </div>
             </div>
-            <div className="stat-content">
-              <span className="stat-value">{totalExecutionsCount}</span>
-              <span className="stat-label">Total Erections</span>
-            </div>
+            <span className="kpi-trend-pill blue">
+              <Activity size={11} /> Live
+            </span>
           </div>
 
-          <div className="work-stat-card">
-            <div className="stat-icon-wrapper amber">
-              <Clock size={22} />
+          {/* KPI 2: Active / In-Progress */}
+          <div className="erection-kpi-card amber">
+            <div className="kpi-main-group">
+              <div className="kpi-icon-circle amber">
+                <Clock size={18} />
+              </div>
+              <div className="kpi-content">
+                <span className="kpi-metric-val">{activeCount}</span>
+                <span className="kpi-metric-label">In-Progress</span>
+              </div>
             </div>
-            <div className="stat-content">
-              <span className="stat-value">{activeCount}</span>
-              <span className="stat-label">In Progress / Active</span>
-            </div>
+            <span className="kpi-trend-pill amber">In Field</span>
           </div>
 
-          <div className="work-stat-card">
-            <div className="stat-icon-wrapper green">
-              <CheckCircle2 size={22} />
+          {/* KPI 3: Completed Works */}
+          <div className="erection-kpi-card green">
+            <div className="kpi-main-group">
+              <div className="kpi-icon-circle green">
+                <CheckCircle2 size={18} />
+              </div>
+              <div className="kpi-content">
+                <span className="kpi-metric-val">{completedCount}</span>
+                <span className="kpi-metric-label">Completed</span>
+              </div>
             </div>
-            <div className="stat-content">
-              <span className="stat-value">{completedCount}</span>
-              <span className="stat-label">Completed Works</span>
-            </div>
+            <span className="kpi-trend-pill green">
+              {completionRate}% Done
+            </span>
           </div>
 
-          <div className="work-stat-card">
-            <div className="stat-icon-wrapper purple">
-              <Layers size={22} />
+          {/* KPI 4: Structures & Nodes */}
+          <div className="erection-kpi-card purple">
+            <div className="kpi-main-group">
+              <div className="kpi-icon-circle purple">
+                <Layers size={18} />
+              </div>
+              <div className="kpi-content">
+                <span className="kpi-metric-val">{totalNodesCount}</span>
+                <span className="kpi-metric-label">Nodes & Poles</span>
+              </div>
             </div>
-            <div className="stat-content">
-              <span className="stat-value">{totalNodesCount}</span>
-              <span className="stat-label">Structures & Nodes</span>
-            </div>
+            <span className="kpi-trend-pill purple">
+              <Layers3 size={11} /> Assets
+            </span>
           </div>
         </div>
 
-        {/* 10-Filter Advanced Filter Panel */}
-        <div className="work-advanced-filters">
-          <div className="filters-header">
-            <div className="filters-title-group">
-              <span className="filters-heading">
-                <Filter size={16} color="var(--accent-primary)" />
-                Work Details Filters
-              </span>
+        {/* 3. Dual-Tier Filter Toolbar */}
+        <div className="erection-filter-container">
+          {/* Primary Fast Filter Bar */}
+          <div className="filter-primary-bar">
+            <div className="filter-left-controls">
+              {/* Universal Search */}
+              <div className="filter-search-box">
+                <Search size={16} className="filter-search-icon" />
+                <input
+                  type="text"
+                  className="filter-search-input"
+                  placeholder="Search Drawing No, Feeder, DTR code..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    className="filter-search-clear"
+                    onClick={() => handleRemoveSingleFilter('search')}
+                    title="Clear Search"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              {/* Status Segment Pills */}
+              <div className="status-pill-group">
+                <button
+                  type="button"
+                  className={`status-segment-btn ${status === 'all' ? 'active' : ''}`}
+                  onClick={() => handleStatusSegmentChange('all')}
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  className={`status-segment-btn ${status === '1' ? 'active' : ''}`}
+                  onClick={() => handleStatusSegmentChange('1')}
+                >
+                  In Progress
+                </button>
+                <button
+                  type="button"
+                  className={`status-segment-btn ${status === '2' ? 'active' : ''}`}
+                  onClick={() => handleStatusSegmentChange('2')}
+                >
+                  Completed
+                </button>
+              </div>
+            </div>
+
+            {/* Filter Actions */}
+            <div className="filter-right-controls">
+              <button
+                type="button"
+                className={`filter-toggle-btn ${activeFiltersCount > 0 ? 'has-active' : ''}`}
+                onClick={() => setIsAdvancedFiltersOpen(!isAdvancedFiltersOpen)}
+                title="Toggle Advanced Filter Panel"
+              >
+                <SlidersHorizontal size={15} />
+                <span>Filters</span>
+                {activeFiltersCount > 0 && (
+                  <span className="filter-count-badge">{activeFiltersCount}</span>
+                )}
+                {isAdvancedFiltersOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              </button>
+
+              <button
+                type="button"
+                className="filter-apply-action-btn"
+                onClick={handleApplyFilters}
+                title="Apply Filter Selections"
+              >
+                <Check size={14} />
+                <span>Apply</span>
+              </button>
+
               {activeFiltersCount > 0 && (
-                <span className="active-filters-badge">
-                  {activeFiltersCount} Active
-                </span>
+                <button
+                  type="button"
+                  className="filter-reset-action-btn"
+                  onClick={handleResetFilters}
+                  title="Reset All Filters"
+                >
+                  <RotateCcw size={13} />
+                  <span>Reset</span>
+                </button>
               )}
             </div>
-
-            <div className="filters-actions-group">
-              <button className="filter-apply-btn" onClick={handleApplyFilters} title="Apply selected filters">
-                <Check size={15} /> Apply Filters
-              </button>
-              <button className="filter-reset-btn" onClick={handleResetFilters} title="Reset all filters">
-                <RotateCcw size={14} /> Reset
-              </button>
-              <button
-                className="refresh-action-btn"
-                onClick={() => fetchErections({ isRefresh: true })}
-                disabled={refreshing || loading}
-                title="Refresh Records"
-              >
-                <RefreshCw size={15} className={refreshing ? 'spinning' : ''} />
-              </button>
-            </div>
           </div>
 
-          <div className="filter-fields-grid">
-            {/* i. State */}
-            <div className="filter-field-item">
-              <label className="filter-field-label">i. State</label>
-              <select
-                className="filter-control-select"
-                value={stateId}
-                onChange={(e) => setStateId(e.target.value)}
-              >
-                <option value="">All States</option>
-                {states.map((s) => (
-                  <option key={s.id} value={s.id}>{s.state_name}</option>
-                ))}
-              </select>
-            </div>
+          {/* Secondary Expandable Advanced Filter Panel */}
+          {isAdvancedFiltersOpen && (
+            <div className="filter-advanced-panel">
+              <div className="filter-groups-layout">
+                {/* Section A: Geographical Scope */}
+                <div className="filter-section-card">
+                  <div className="filter-section-title">
+                    <MapPin size={14} color="#0284c7" />
+                    Geographical Scope
+                  </div>
+                  <div className="filter-inputs-row">
+                    <div className="filter-input-group">
+                      <label className="filter-label">State</label>
+                      <select
+                        className="filter-select"
+                        value={stateId}
+                        onChange={(e) => setStateId(e.target.value)}
+                      >
+                        <option value="">All States</option>
+                        {states.map((s) => (
+                          <option key={s.id} value={s.id}>{s.state_name}</option>
+                        ))}
+                      </select>
+                    </div>
 
-            {/* ii. District */}
-            <div className="filter-field-item">
-              <label className="filter-field-label">ii. District</label>
-              <select
-                className="filter-control-select"
-                value={districtId}
-                onChange={(e) => setDistrictId(e.target.value)}
-                disabled={!stateId}
-              >
-                <option value="">{stateId ? 'All Districts' : 'Select State First'}</option>
-                {districts.map((d) => (
-                  <option key={d.id} value={d.id}>{d.district_name}</option>
-                ))}
-              </select>
-            </div>
+                    <div className="filter-input-group">
+                      <label className="filter-label">District</label>
+                      <select
+                        className="filter-select"
+                        value={districtId}
+                        onChange={(e) => setDistrictId(e.target.value)}
+                        disabled={!stateId}
+                      >
+                        <option value="">{stateId ? 'All Districts' : 'Select State First'}</option>
+                        {districts.map((d) => (
+                          <option key={d.id} value={d.id}>{d.district_name}</option>
+                        ))}
+                      </select>
+                    </div>
 
-            {/* iii. Block */}
-            <div className="filter-field-item">
-              <label className="filter-field-label">iii. Block</label>
-              <select
-                className="filter-control-select"
-                value={blockId}
-                onChange={(e) => setBlockId(e.target.value)}
-                disabled={!districtId}
-              >
-                <option value="">{districtId ? 'All Blocks' : 'Select District First'}</option>
-                {blocks.map((b) => (
-                  <option key={b.id} value={b.id}>{b.block_name}</option>
-                ))}
-              </select>
-            </div>
+                    <div className="filter-input-group">
+                      <label className="filter-label">Block</label>
+                      <select
+                        className="filter-select"
+                        value={blockId}
+                        onChange={(e) => setBlockId(e.target.value)}
+                        disabled={!districtId}
+                      >
+                        <option value="">{districtId ? 'All Blocks' : 'Select District First'}</option>
+                        {blocks.map((b) => (
+                          <option key={b.id} value={b.id}>{b.block_name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
 
-            {/* iv. Feeder */}
-            <div className="filter-field-item">
-              <label className="filter-field-label">iv. Feeder</label>
-              <input
-                type="text"
-                className="filter-control-input"
-                placeholder="Feeder name..."
-                value={feeder}
-                onChange={(e) => setFeeder(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
-              />
-            </div>
+                {/* Section B: Line & Contractor Classification */}
+                <div className="filter-section-card">
+                  <div className="filter-section-title">
+                    <Zap size={14} color="#f59e0b" />
+                    Line & Contractor
+                  </div>
+                  <div className="filter-inputs-row">
+                    <div className="filter-input-group">
+                      <label className="filter-label">Feeder Name</label>
+                      <input
+                        type="text"
+                        className="filter-text-field"
+                        placeholder="e.g. Feeder-01..."
+                        value={feeder}
+                        onChange={(e) => setFeeder(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
+                      />
+                    </div>
 
-            {/* v. Contractor Name */}
-            <div className="filter-field-item">
-              <label className="filter-field-label">v. Contractor Name</label>
-              <select
-                className="filter-control-select"
-                value={contractorId}
-                onChange={(e) => setContractorId(e.target.value)}
-              >
-                <option value="">All Contractors</option>
-                {contractors.map((c) => (
-                  <option key={c.id} value={c.id}>{c.contractor_name}</option>
-                ))}
-              </select>
-            </div>
+                    <div className="filter-input-group">
+                      <label className="filter-label">Contractor</label>
+                      <select
+                        className="filter-select"
+                        value={contractorId}
+                        onChange={(e) => setContractorId(e.target.value)}
+                      >
+                        <option value="">All Contractors</option>
+                        {contractors.map((c) => (
+                          <option key={c.id} value={c.id}>{c.contractor_name}</option>
+                        ))}
+                      </select>
+                    </div>
 
-            {/* vi. Line Type */}
-            <div className="filter-field-item">
-              <label className="filter-field-label">vi. Line Type</label>
-              <select
-                className="filter-control-select"
-                value={lineType}
-                onChange={(e) => setLineType(e.target.value)}
-              >
-                <option value="">All Line Types</option>
-                <option value="1">11 KV Overhead Line</option>
-                <option value="2">LT Overhead Line</option>
-                <option value="3">33 KV High Tension Line</option>
-              </select>
-            </div>
+                    <div className="filter-input-group">
+                      <label className="filter-label">Line Type</label>
+                      <select
+                        className="filter-select"
+                        value={lineType}
+                        onChange={(e) => setLineType(e.target.value)}
+                      >
+                        <option value="">All Line Types</option>
+                        <option value="1">11 KV Overhead Line</option>
+                        <option value="2">LT Overhead Line</option>
+                        <option value="3">33 KV High Tension Line</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
 
-            {/* vii. Status */}
-            <div className="filter-field-item">
-              <label className="filter-field-label">vii. Status</label>
-              <select
-                className="filter-control-select"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <option value="all">All Statuses</option>
-                <option value="1">Active / In Progress</option>
-                <option value="2">Completed</option>
-              </select>
-            </div>
+                {/* Section C: Execution Date Range */}
+                <div className="filter-section-card">
+                  <div className="filter-section-title">
+                    <Calendar size={14} color="#10b981" />
+                    Execution Date Range
+                  </div>
+                  <div className="filter-inputs-row">
+                    <div className="filter-input-group">
+                      <label className="filter-label">From Date</label>
+                      <input
+                        type="date"
+                        className="filter-date-field"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                      />
+                    </div>
 
-            {/* viii. Start Date */}
-            <div className="filter-field-item">
-              <label className="filter-field-label">viii. Start Date</label>
-              <input
-                type="date"
-                className="filter-control-date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
+                    <div className="filter-input-group">
+                      <label className="filter-label">To Date</label>
+                      <input
+                        type="date"
+                        className="filter-date-field"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
+          )}
 
-            {/* viii. End Date */}
-            <div className="filter-field-item">
-              <label className="filter-field-label">viii. End Date</label>
-              <input
-                type="date"
-                className="filter-control-date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
+          {/* Active Filter Chips Tray */}
+          {activeFiltersCount > 0 && (
+            <div className="active-filters-tray">
+              <span className="active-filter-label">
+                <Filter size={13} color="var(--primary-color, #6366f1)" />
+                Active Filters:
+              </span>
 
-            {/* Search Keyword */}
-            <div className="filter-field-item">
-              <label className="filter-field-label">Search / Drawing</label>
-              <input
-                type="text"
-                className="filter-control-input"
-                placeholder="Drawing No, DTR..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
-              />
+              {searchQuery.trim() && (
+                <span className="active-tag-chip">
+                  Search: <strong>"{searchQuery}"</strong>
+                  <button type="button" className="tag-remove-btn" onClick={() => handleRemoveSingleFilter('search')}>
+                    <X size={12} />
+                  </button>
+                </span>
+              )}
+
+              {status !== 'all' && (
+                <span className="active-tag-chip">
+                  Status: <strong>{status === '2' ? 'Completed' : 'In Progress'}</strong>
+                  <button type="button" className="tag-remove-btn" onClick={() => handleRemoveSingleFilter('status')}>
+                    <X size={12} />
+                  </button>
+                </span>
+              )}
+
+              {stateId && selectedStateName && (
+                <span className="active-tag-chip">
+                  State: <strong>{selectedStateName}</strong>
+                  <button type="button" className="tag-remove-btn" onClick={() => handleRemoveSingleFilter('state')}>
+                    <X size={12} />
+                  </button>
+                </span>
+              )}
+
+              {districtId && selectedDistrictName && (
+                <span className="active-tag-chip">
+                  District: <strong>{selectedDistrictName}</strong>
+                  <button type="button" className="tag-remove-btn" onClick={() => handleRemoveSingleFilter('district')}>
+                    <X size={12} />
+                  </button>
+                </span>
+              )}
+
+              {blockId && selectedBlockName && (
+                <span className="active-tag-chip">
+                  Block: <strong>{selectedBlockName}</strong>
+                  <button type="button" className="tag-remove-btn" onClick={() => handleRemoveSingleFilter('block')}>
+                    <X size={12} />
+                  </button>
+                </span>
+              )}
+
+              {feeder.trim() && (
+                <span className="active-tag-chip">
+                  Feeder: <strong>{feeder}</strong>
+                  <button type="button" className="tag-remove-btn" onClick={() => handleRemoveSingleFilter('feeder')}>
+                    <X size={12} />
+                  </button>
+                </span>
+              )}
+
+              {contractorId && selectedContractorName && (
+                <span className="active-tag-chip">
+                  Contractor: <strong>{selectedContractorName}</strong>
+                  <button type="button" className="tag-remove-btn" onClick={() => handleRemoveSingleFilter('contractor')}>
+                    <X size={12} />
+                  </button>
+                </span>
+              )}
+
+              {lineType && (
+                <span className="active-tag-chip">
+                  Line Type: <strong>{lineType === '1' ? '11 KV' : lineType === '2' ? 'LT' : '33 KV'}</strong>
+                  <button type="button" className="tag-remove-btn" onClick={() => handleRemoveSingleFilter('lineType')}>
+                    <X size={12} />
+                  </button>
+                </span>
+              )}
+
+              {(startDate || endDate) && (
+                <span className="active-tag-chip">
+                  Date: <strong>{startDate || 'Any'} to {endDate || 'Any'}</strong>
+                  <button type="button" className="tag-remove-btn" onClick={() => handleRemoveSingleFilter('dateRange')}>
+                    <X size={12} />
+                  </button>
+                </span>
+              )}
+
+              <button type="button" className="clear-all-link" onClick={handleResetFilters}>
+                Clear All
+              </button>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Main Content: Table or Loading */}
+        {/* 4. Table and Empty States */}
         {loading ? (
           <div className="glass-panel" style={{ padding: '60px', textAlign: 'center' }}>
             <Loader size={36} />
-            <p style={{ marginTop: '16px', color: 'var(--text-muted)' }}>
-              Loading Erection Work Executions from API...
+            <p style={{ marginTop: '16px', color: 'var(--text-secondary)' }}>
+              Loading Erection Work Executions from GIS server...
             </p>
           </div>
         ) : safeErections.length === 0 ? (
-          <div className="glass-panel work-empty-state">
-            <div className="work-empty-icon">
+          <div className="erection-empty-state">
+            <div className="empty-state-icon-box">
               <AlertCircle size={28} />
             </div>
-            <h3 className="work-empty-title">No Erection Records Found</h3>
-            <p className="work-empty-subtitle">
+            <h3 className="empty-state-title">No Erection Records Found</h3>
+            <p className="empty-state-desc">
               {activeFiltersCount > 0
-                ? 'No erection executions match your filter criteria. Try resetting filters.'
-                : 'No erection execution records have been submitted yet.'}
+                ? 'No erection executions match your current filter criteria. Try resetting filters or adjusting search parameters.'
+                : 'No erection execution records have been uploaded or submitted yet.'}
             </p>
             {activeFiltersCount > 0 && (
               <Button
                 variant="secondary"
-                style={{ marginTop: '16px' }}
+                style={{ marginTop: '8px' }}
                 onClick={handleResetFilters}
               >
-                Reset Filters
+                Reset All Filters
               </Button>
             )}
           </div>
         ) : (
-          <>
+          <div className="table-card-wrapper">
             <DataTable<ErectionRecord>
               columns={columns}
               data={safeErections}
@@ -730,35 +1025,26 @@ export const ErectionWorkPage: React.FC = () => {
               hideSearch={true}
             />
 
-            {/* ix & x. Dynamic Pagination Controls */}
-            <div className="work-pagination-bar">
-              <div className="pagination-info-side">
-                <span className="pagination-count-label">
+            {/* 5. Server-Side Pagination Bar */}
+            <div className="erection-pagination-bar">
+              <div className="pagination-left-info">
+                <span className="pagination-count-summary">
                   {pageSize === null ? (
-                    <>
-                      Showing all <span className="pagination-count-highlight">{paginationMeta.total_count}</span> records (All Data)
-                    </>
+                    <>Showing all <strong>{paginationMeta.total_count}</strong> records (Unpaged)</>
                   ) : (
                     <>
-                      Showing{' '}
-                      <span className="pagination-count-highlight">
-                        {paginationMeta.total_count === 0 ? 0 : (pageIndex - 1) * pageSize + 1}
-                      </span>
-                      {' '}-{' '}
-                      <span className="pagination-count-highlight">
-                        {Math.min(pageIndex * pageSize, paginationMeta.total_count)}
-                      </span>
-                      {' '}of{' '}
-                      <span className="pagination-count-highlight">{paginationMeta.total_count}</span> records
+                      Showing <strong>{paginationMeta.total_count === 0 ? 0 : (pageIndex - 1) * pageSize + 1}</strong> -{' '}
+                      <strong>{Math.min(pageIndex * pageSize, paginationMeta.total_count)}</strong> of{' '}
+                      <strong>{paginationMeta.total_count}</strong> records
                     </>
                   )}
                 </span>
 
-                <div className="pagination-pagesize-wrapper">
-                  <label htmlFor="erection-pagesize">ix. Page Size:</label>
+                <div className="pagination-size-selector">
+                  <label htmlFor="erection-pagesize">Rows:</label>
                   <select
                     id="erection-pagesize"
-                    className="pagination-pagesize-select"
+                    className="pagination-select-control"
                     value={pageSize === null ? 'all' : pageSize}
                     onChange={(e) => handlePageSizeChange(e.target.value === 'all' ? null : Number(e.target.value))}
                   >
@@ -767,15 +1053,16 @@ export const ErectionWorkPage: React.FC = () => {
                     <option value={20}>20 / page</option>
                     <option value={50}>50 / page</option>
                     <option value={100}>100 / page</option>
-                    <option value="all">All (No Pagination)</option>
+                    <option value="all">All</option>
                   </select>
                 </div>
               </div>
 
               {pageSize !== null && paginationMeta.total_pages > 1 && (
-                <div className="pagination-nav-group">
+                <div className="pagination-nav-buttons">
                   <button
-                    className="pagination-page-btn"
+                    type="button"
+                    className="pagination-btn"
                     onClick={() => handlePageChange(1)}
                     disabled={pageIndex <= 1}
                     title="First Page"
@@ -783,28 +1070,31 @@ export const ErectionWorkPage: React.FC = () => {
                     First
                   </button>
                   <button
-                    className="pagination-page-btn"
+                    type="button"
+                    className="pagination-btn"
                     onClick={() => handlePageChange(pageIndex - 1)}
                     disabled={pageIndex <= 1}
                     title="Previous Page"
                   >
-                    <ChevronLeft size={15} />
+                    <ChevronLeft size={16} />
                   </button>
 
-                  <span style={{ fontSize: '13px', color: 'var(--text-muted)', padding: '0 8px' }}>
-                    x. Page <strong style={{ color: 'var(--text-primary)' }}>{pageIndex}</strong> of {paginationMeta.total_pages}
+                  <span style={{ fontSize: '13px', color: 'var(--text-secondary)', padding: '0 8px', fontWeight: 600 }}>
+                    Page <strong style={{ color: 'var(--text-primary)' }}>{pageIndex}</strong> of {paginationMeta.total_pages}
                   </span>
 
                   <button
-                    className="pagination-page-btn"
+                    type="button"
+                    className="pagination-btn"
                     onClick={() => handlePageChange(pageIndex + 1)}
                     disabled={pageIndex >= paginationMeta.total_pages}
                     title="Next Page"
                   >
-                    <ChevronRight size={15} />
+                    <ChevronRight size={16} />
                   </button>
                   <button
-                    className="pagination-page-btn"
+                    type="button"
+                    className="pagination-btn"
                     onClick={() => handlePageChange(paginationMeta.total_pages)}
                     disabled={pageIndex >= paginationMeta.total_pages}
                     title="Last Page"
@@ -814,218 +1104,237 @@ export const ErectionWorkPage: React.FC = () => {
                 </div>
               )}
             </div>
-          </>
+          </div>
         )}
 
-        {/* Erection & Node Inspection Drawer */}
+        {/* 6. Quick-Inspect Drawer */}
         <Drawer
           isOpen={drawerOpen}
           onClose={() => {
             setDrawerOpen(false);
             setSelectedErection(null);
           }}
-          title={selectedErection ? `Erection Execution: ${selectedErection.drawing_no || `#${selectedErection.id}`}` : 'Erection Details'}
-          maxWidth="640px"
+          title={selectedErection ? `Erection Quick Inspection: ${selectedErection.drawing_no || `#${selectedErection.id}`}` : 'Erection Inspection'}
+          maxWidth="680px"
           footer={
-            <Button variant="secondary" onClick={() => setDrawerOpen(false)}>
-              Close Inspection
-            </Button>
+            selectedErection && (
+              <div className="drawer-action-footer-btns">
+                <Button variant="secondary" onClick={() => setDrawerOpen(false)}>
+                  Close Inspection
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    navigate(`/work-details/erection/${selectedErection.id}`);
+                  }}
+                >
+                  <span>Open Full Execution Page</span>
+                  <ExternalLink size={14} />
+                </Button>
+              </div>
+            )
           }
         >
           {selectedErection && (
-            <div>
+            <div className="drawer-inspect-container">
               {loadingDetail && (
-                <div style={{ marginBottom: '14px', color: 'var(--accent-primary)', fontSize: '13px' }}>
-                  Refreshing latest node attributes...
+                <div style={{ color: '#0284c7', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <RefreshCw size={13} className="icon-spin" />
+                  <span>Loading full node details from GIS database...</span>
                 </div>
               )}
 
-              {/* Execution Summary Section */}
-              <div className="drawer-detail-section">
-                <div className="drawer-section-title">
-                  <Tag size={16} /> Execution Overview
+              {/* Drawer Hero Summary */}
+              <div className="drawer-summary-hero">
+                <div className="drawer-hero-top">
+                  <div>
+                    <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#94a3b8' }}>
+                      Execution ID: #{selectedErection.id}
+                    </span>
+                    <h3 className="drawer-dwg-title">
+                      {selectedErection.drawing_no || `Drawing #${selectedErection.id}`}
+                    </h3>
+                  </div>
+                  <Chips type={selectedErection.status === 2 ? 'success' : 'warning'}>
+                    {selectedErection.status === 2 ? 'Completed' : 'In Progress'}
+                  </Chips>
                 </div>
-                <div className="detail-properties-grid">
-                  <div className="detail-property-card">
-                    <div className="prop-label">Drawing Number</div>
-                    <div className="prop-val">{selectedErection.drawing_no || 'N/A'}</div>
+
+                <div className="drawer-hero-meta-row">
+                  <span>Feeder: <strong>{selectedErection.feeder_name || 'Standard'}</strong></span>
+                  {selectedErection.dtr_code && (
+                    <span>DTR: <strong>{selectedErection.dtr_code}</strong></span>
+                  )}
+                  <span>Date: <strong>{selectedErection.created_on || 'N/A'}</strong></span>
+                </div>
+              </div>
+
+              {/* Key Overview Properties */}
+              <div className="drawer-card-section">
+                <div className="drawer-card-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Tag size={15} color="#0284c7" />
+                    <span>Administrative Overview</span>
                   </div>
-                  <div className="detail-property-card">
-                    <div className="prop-label">Status</div>
-                    <div className="prop-val">
-                      <Chips type={selectedErection.status === 2 ? 'success' : 'warning'}>
-                        {selectedErection.status === 2 ? 'Completed' : 'Active'}
-                      </Chips>
-                    </div>
+                </div>
+                <div className="drawer-props-grid">
+                  <div className="drawer-prop-item">
+                    <span className="drawer-prop-label">Contractor</span>
+                    <span className="drawer-prop-value">{selectedErection.contractor_name || 'N/A'}</span>
                   </div>
-                  <div className="detail-property-card">
-                    <div className="prop-label">Feeder Name</div>
-                    <div className="prop-val">{selectedErection.feeder_name || 'Standard Feeder'}</div>
+                  <div className="drawer-prop-item">
+                    <span className="drawer-prop-label">Surveyor</span>
+                    <span className="drawer-prop-value">{selectedErection.surveyor_name || 'Unassigned'}</span>
                   </div>
-                  <div className="detail-property-card">
-                    <div className="prop-label">DTR Code</div>
-                    <div className="prop-val">{selectedErection.dtr_code || 'N/A'}</div>
+                  <div className="drawer-prop-item">
+                    <span className="drawer-prop-label">Type of Work</span>
+                    <span className="drawer-prop-value">{selectedErection.type_of_work_name || 'Standard Erection'}</span>
                   </div>
-                  <div className="detail-property-card">
-                    <div className="prop-label">Contractor</div>
-                    <div className="prop-val">{selectedErection.contractor_name || 'N/A'}</div>
-                  </div>
-                  <div className="detail-property-card">
-                    <div className="prop-label">Surveyor</div>
-                    <div className="prop-val">{selectedErection.surveyor_name || 'Unassigned'}</div>
-                  </div>
-                  <div className="detail-property-card">
-                    <div className="prop-label">Type of Work</div>
-                    <div className="prop-val">{selectedErection.type_of_work_name || 'Standard Erection'}</div>
-                  </div>
-                  <div className="detail-property-card">
-                    <div className="prop-label">Execution Date</div>
-                    <div className="prop-val">{selectedErection.created_on || 'N/A'}</div>
+                  <div className="drawer-prop-item">
+                    <span className="drawer-prop-label">Starting Point</span>
+                    <span className="drawer-prop-value">{selectedErection.lt_starting_point_name || 'Default Source'}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Location Hierarchy */}
-              <div className="drawer-detail-section">
-                <div className="drawer-section-title">
-                  <MapPin size={16} /> Geographical Location
+              {/* Geographical Coordinates Hierarchy */}
+              <div className="drawer-card-section">
+                <div className="drawer-card-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <MapPin size={15} color="#10b981" />
+                    <span>Geographical Coordinates</span>
+                  </div>
                 </div>
-                <div className="detail-properties-grid">
-                  <div className="detail-property-card">
-                    <div className="prop-label">State</div>
-                    <div className="prop-val">{selectedErection.state_name || 'N/A'}</div>
+                <div className="drawer-props-grid">
+                  <div className="drawer-prop-item">
+                    <span className="drawer-prop-label">State</span>
+                    <span className="drawer-prop-value">{selectedErection.state_name || 'N/A'}</span>
                   </div>
-                  <div className="detail-property-card">
-                    <div className="prop-label">District</div>
-                    <div className="prop-val">{selectedErection.district_name || 'N/A'}</div>
+                  <div className="drawer-prop-item">
+                    <span className="drawer-prop-label">District</span>
+                    <span className="drawer-prop-value">{selectedErection.district_name || 'N/A'}</span>
                   </div>
-                  <div className="detail-property-card">
-                    <div className="prop-label">Block</div>
-                    <div className="prop-val">{selectedErection.block_name || 'N/A'}</div>
+                  <div className="drawer-prop-item">
+                    <span className="drawer-prop-label">Block</span>
+                    <span className="drawer-prop-value">{selectedErection.block_name || 'N/A'}</span>
                   </div>
-                  <div className="detail-property-card">
-                    <div className="prop-label">Village</div>
-                    <div className="prop-val">{selectedErection.village_name || 'N/A'}</div>
+                  <div className="drawer-prop-item">
+                    <span className="drawer-prop-label">Village</span>
+                    <span className="drawer-prop-value">{selectedErection.village_name || 'N/A'}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Remarks if any */}
+              {/* Remarks */}
               {selectedErection.remarks && (
-                <div className="drawer-detail-section">
-                  <div className="drawer-section-title">
-                    <Calendar size={16} /> Field Remarks
+                <div className="drawer-card-section">
+                  <div className="drawer-card-header">
+                    <span>Field Surveyor Remarks</span>
                   </div>
-                  <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.02)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', background: 'var(--bg-tertiary)', padding: '10px 12px', borderRadius: '6px' }}>
                     {selectedErection.remarks}
                   </p>
                 </div>
               )}
 
-              {/* Erected Nodes / Structures */}
-              <div className="drawer-detail-section">
-                <div className="drawer-section-title">
-                  <Zap size={16} /> Erected Nodes & Structures ({selectedErection.nodes?.length || 0})
+              {/* Erected Structure Nodes */}
+              <div className="drawer-card-section">
+                <div className="drawer-card-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Zap size={15} color="#f59e0b" />
+                    <span>Erected Structures & Nodes ({selectedErection.nodes?.length || 0})</span>
+                  </div>
                 </div>
 
                 {!selectedErection.nodes || selectedErection.nodes.length === 0 ? (
-                  <p style={{ fontSize: '13.5px', color: 'var(--text-muted)' }}>
+                  <p style={{ fontSize: '13px', color: 'var(--text-muted)', padding: '10px 0' }}>
                     No structure nodes recorded for this erection execution yet.
                   </p>
                 ) : (
-                  <div className="nodes-timeline-list">
+                  <div>
                     {selectedErection.nodes.map((node: ErectionNode) => (
-                      <div key={node.id || node.sequenceNumber} className="node-timeline-card">
-                        <div className="node-card-header">
-                          <div className="node-header-left">
-                            <span className="node-seq-badge">{node.sequenceNumber}</span>
-                            <span className="node-nameLabel">{node.nameLabel}</span>
+                      <div key={node.id || node.sequenceNumber} className="drawer-node-card">
+                        <div className="drawer-node-top">
+                          <div className="drawer-node-tag-seq">
+                            <span className="node-seq-dot">{node.sequenceNumber}</span>
+                            <span>{node.nameLabel}</span>
                           </div>
-                          <span className={`node-type-badge ${String(node.nodeType).toLowerCase()}`}>
+                          <span className={`line-type-pill`} style={{ fontSize: '11px' }}>
                             {node.nodeType}
                           </span>
                         </div>
 
-                        {/* Coordinates */}
-                        <div className="node-gps-coordinates">
-                          <MapPin size={13} color="var(--accent-primary)" />
-                          <span>Lat: {node.latitude?.toFixed(6)}, Long: {node.longitude?.toFixed(6)}</span>
+                        {/* GPS Coordinates */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                          <MapPin size={12} color="#0284c7" />
+                          <span>Lat: {node.latitude?.toFixed(5)}, Long: {node.longitude?.toFixed(5)}</span>
                         </div>
 
-                        {/* Specific Hardware Info */}
-                        <div className="detail-properties-grid" style={{ marginBottom: '10px' }}>
+                        {/* Hardware Details */}
+                        <div className="drawer-props-grid" style={{ marginTop: '4px' }}>
                           {node.pole_type_name && (
-                            <div className="detail-property-card">
-                              <div className="prop-label">Pole Type & Qty</div>
-                              <div className="prop-val">{node.pole_type_name} {node.pole_qty ? `(${node.pole_qty})` : ''}</div>
+                            <div className="drawer-prop-item">
+                              <span className="drawer-prop-label">Pole Type</span>
+                              <span className="drawer-prop-value">{node.pole_type_name} {node.pole_qty ? `(${node.pole_qty})` : ''}</span>
                             </div>
                           )}
                           {node.dtr_capacity_name && (
-                            <div className="detail-property-card">
-                              <div className="prop-label">DTR Capacity</div>
-                              <div className="prop-val">{node.dtr_capacity_name} {node.dtr_serial_no ? `(S/N: ${node.dtr_serial_no})` : ''}</div>
+                            <div className="drawer-prop-item">
+                              <span className="drawer-prop-label">DTR Capacity</span>
+                              <span className="drawer-prop-value">{node.dtr_capacity_name}</span>
                             </div>
                           )}
                           {node.conductor_name && (
-                            <div className="detail-property-card">
-                              <div className="prop-label">Conductor</div>
-                              <div className="prop-val">{node.conductor_name}</div>
+                            <div className="drawer-prop-item">
+                              <span className="drawer-prop-label">Conductor</span>
+                              <span className="drawer-prop-value">{node.conductor_name}</span>
                             </div>
                           )}
                           {node.structure_condition && (
-                            <div className="detail-property-card">
-                              <div className="prop-label">Condition</div>
-                              <div className="prop-val">{node.structure_condition}</div>
+                            <div className="drawer-prop-item">
+                              <span className="drawer-prop-label">Condition</span>
+                              <span className="drawer-prop-value">{node.structure_condition}</span>
                             </div>
                           )}
                         </div>
 
-                        {/* Earthing, Stay sets, Clamps attributes */}
-                        <div className="node-attributes-tags">
+                        {/* Attribute Badges */}
+                        <div className="drawer-node-badges" style={{ marginTop: '4px' }}>
                           {node.earthing_quantity ? (
-                            <span className="attr-tag">Earthing: {node.earthing_quantity}</span>
+                            <span className="drawing-id-pill">Earthing: {node.earthing_quantity}</span>
                           ) : null}
                           {node.stay_set_quantity ? (
-                            <span className="attr-tag">Stay Set: {node.stay_set_quantity}</span>
+                            <span className="drawing-id-pill">Stay Set: {node.stay_set_quantity}</span>
                           ) : null}
                           {node.dead_end_clamp_qty ? (
-                            <span className="attr-tag">Dead End Clamp: {node.dead_end_clamp_qty}</span>
+                            <span className="drawing-id-pill">Dead End Clamps: {node.dead_end_clamp_qty}</span>
                           ) : null}
                           {node.suspension_clamp_qty ? (
-                            <span className="attr-tag">Suspension Clamp: {node.suspension_clamp_qty}</span>
+                            <span className="drawing-id-pill">Suspension Clamps: {node.suspension_clamp_qty}</span>
                           ) : null}
                           {node.ipc_qty ? (
-                            <span className="attr-tag">IPC: {node.ipc_qty}</span>
+                            <span className="drawing-id-pill">IPC: {node.ipc_qty}</span>
                           ) : null}
                           {node.service_connection_qty ? (
-                            <span className="attr-tag">Service Conn: {node.service_connection_qty}</span>
+                            <span className="drawing-id-pill">Service Conn: {node.service_connection_qty}</span>
                           ) : null}
                           {node.extra_consumption ? (
-                            <span className="attr-tag">Extra: {node.extra_consumption}m</span>
+                            <span className="drawing-id-pill">Extra: {node.extra_consumption}m</span>
                           ) : null}
-                          {node.attributes &&
-                            Object.entries(node.attributes)
-                              .filter(([k, v]) => v !== null && v !== undefined && v !== '' && typeof v !== 'object')
-                              .slice(0, 6)
-                              .map(([k, v]) => (
-                                <span key={k} className="attr-tag">
-                                  {k}: {String(v)}
-                                </span>
-                              ))}
                         </div>
 
-                        {/* Node Images Strip */}
+                        {/* Node Thumbnails */}
                         {((node.images && node.images.length > 0) || node.imageUri) && (
-                          <div className="node-image-strip">
+                          <div className="drawer-node-thumb-tray">
                             {(node.images || (node.imageUri ? [node.imageUri] : [])).map((imgUrl, imgIdx) => (
                               <img
                                 key={imgIdx}
                                 src={imgUrl}
                                 alt={`Structure node ${node.nameLabel}`}
-                                className="node-thumb-img"
+                                className="drawer-thumb-img"
                                 onClick={() => window.open(imgUrl, '_blank')}
                                 onError={(e) => {
-                                  // Hide broken image link gracefully
                                   (e.target as HTMLElement).style.display = 'none';
                                 }}
                               />

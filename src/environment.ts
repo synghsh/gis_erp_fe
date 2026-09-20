@@ -1,10 +1,11 @@
-// Local backend URL (uncomment to use local server)
-export const baseUrl = "http://127.0.0.1:8000/gis/administration/";
+// Dynamic backend URL: auto-detects localhost vs deployed environment
+export const baseUrl =
+  import.meta.env.VITE_API_BASE_URL ||
+  (typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+    ? "http://127.0.0.1:8000/gis/administration/"
+    : "https://gis-backend-phi.vercel.app/gis/administration/");
 
-// Deployed backend URL
-// export const baseUrl =
-//   import.meta.env.VITE_API_BASE_URL ||
-//   "https://gis-backend-phi.vercel.app/gis/administration/";
 
 
 export const urls = {
