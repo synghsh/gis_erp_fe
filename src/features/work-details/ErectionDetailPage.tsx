@@ -151,6 +151,13 @@ export const ErectionDetailPage: React.FC = () => {
     if (attrs.staySetPhotos?.includes(imgUri)) return 'Stay Set Assembly';
     if (attrs.earthingPhotos?.includes(imgUri)) return 'Earthing Installation';
 
+    // Heuristic matching for Cloudflare R2 presigned URLs / object keys
+    const upper = (imgUri || '').toUpperCase();
+    if (upper.includes('POLE_DB') || upper.includes('POLEDB')) return 'Pole Distribution Box';
+    if (upper.includes('EARTHING')) return 'Earthing Installation';
+    if (upper.includes('STAY_SET') || upper.includes('STAYSET')) return 'Stay Set Assembly';
+    if (upper.includes('POLE')) return 'Pole Structure';
+
     const defaultTitles = ['Pole Structure', 'Distribution Box', 'Stay Set Assembly', 'Earthing Installation'];
     return defaultTitles[index % defaultTitles.length] || `Field Photo #${index + 1}`;
   };

@@ -1,10 +1,15 @@
-export const baseUrl =
-  import.meta.env.VITE_API_BASE_URL ||
-  "http://127.0.0.1:8000/gis/administration/";
+// Local backend URL (uncomment to use local server)
+export const baseUrl = "http://127.0.0.1:8000/gis/administration/";
+
+// Deployed backend URL
+// export const baseUrl =
+//   import.meta.env.VITE_API_BASE_URL ||
+//   "https://gis-backend-phi.vercel.app/gis/administration/";
+
 
 export const urls = {
   login_admin: "admin/login/",
-  
+
   // State Master
   state_add: "master/state/add/",
   state_edit: "master/state/edit/",
